@@ -1,0 +1,101 @@
+#
+F77 = ifort
+SRC = source
+#
+BLDAT = $(SRC)/bd1.f $(SRC)/bd2.f $(SRC)/bldatgem.f $(SRC)/cameron.f\
+	$(SRC)/camer70.f $(SRC)/mollnix.f $(SRC)/pkanasa.f
+CAS =	$(SRC)/abel.f $(SRC)/binel.f $(SRC)/chabs.f \
+	$(SRC)/costa.f $(SRC)/geom.f $(SRC)/jtypa.f\
+	$(SRC)/jtypb.f $(SRC)/paulip.f $(SRC)/pmom.f $(SRC)/poten.f\
+	$(SRC)/qints2.f $(SRC)/refrac.f $(SRC)/sigmat.f $(SRC)/slqek.f\
+	$(SRC)/tinvu.f $(SRC)/wopt.f
+CEM =	$(SRC)/cem03.f $(SRC)/absorp.f $(SRC)/cascad.f \
+	$(SRC)/cduarte.f $(SRC)/chinel.f $(SRC)/cosel.f $(SRC)/direct.f\
+	$(SRC)/disimp.f $(SRC)/elex.f $(SRC)/fisgem.f \
+	$(SRC)/isobar.f $(SRC)/partn.f $(SRC)/pinpn.f\
+	$(SRC)/pointe.f $(SRC)/precof.f $(SRC)/rastar.f\
+	$(SRC)/randmc.f $(SRC)/stat.f $(SRC)/stdcay.f $(SRC)/tkinm3.f\
+	$(SRC)/typint.f $(SRC)/vmnsp.f $(SRC)/wim.f
+CEMU =	$(SRC)/coalesl.f $(SRC)/fermidec.f\
+	$(SRC)/fint.f $(SRC)/fis.f $(SRC)/gambetm.f $(SRC)/help.f \
+	$(SRC)/initial.f $(SRC)/renorm.f $(SRC)/s12.f $(SRC)/vlobd.f
+GEM =	$(SRC)/energy.f $(SRC)/gem2.f
+GEN =	$(SRC)/kinema.f $(SRC)/rotor.f $(SRC)/subev.f
+OUT =	$(SRC)/derig.f $(SRC)/photo.f $(SRC)/prinp.f $(SRC)/siginv.f\
+	$(SRC)/typeout.f $(SRC)/pisa.f
+PRE =	$(SRC)/bf.f $(SRC)/barfit.f $(SRC)/colomb.f\
+	$(SRC)/deltam.f $(SRC)/fam.f $(SRC)/gamagu2.f\
+	$(SRC)/molnix.f $(SRC)/preqaux.f\
+	$(SRC)/shell.f $(SRC)/ststcs.f $(SRC)/trans.f $(SRC)/vhelp.f
+#
+SRCTOT = cem03.f blkdata.f cascad.f cemuse.f gem.f genrl.f\
+	out.f precof.f 
+#
+OBJECTS=cem03.o blkdata.o cascad.o cemuse.o gem.o genrl.o\
+	out.o precof.o
+#
+# FFLGS = -u -silent -f77
+# OFLGS = $(FFLGS) -fast -C 
+# F77FLGSC = $(OFLGS) -c
+# F77FLGS = $(OFLGS) 
+# CHKFLGS = $(FFLGS) -errtags -w4
+FFLGS = -O1  -diag-disable 8290,8291
+OFLGS = $(FFLGS)
+F77FLGSC = $(OFLGS) -c
+F77FLGS = $(OFLGS) 
+CHKFLGS = $(FFLGS) 
+#
+xcem03: $(OBJECTS)
+	$(F77) -o $@ $(F77FLGS) $(OBJECTS)
+xcemchk: srctot.f
+	$(F77) $(CHKFLGS) -o $@ srctot.f
+#
+compilation: xcem03                 #Compile and make executable only
+run: xcem03 cem03.inp               #Normal run
+	date
+	time ./xcem03
+	date
+checklisting: xcemchk               #Check for Fortran compiler messages
+#                                   #and warnings.
+
+clean:
+	@ echo '=====> clean:   remove   *.o   *.f   *.inf   *.res   xcem03'
+	@ rm -f *.o *.f *.inf *.res  xcem03
+
+srctot.f: $(SRCTOT)
+	cat $(SRCTOT) > $@
+#
+blkdata.f   : $(BLDAT)
+	cat $(BLDAT) > $@
+cascad.f    : $(CAS)
+	cat $(CAS) > $@
+cem03.f     : $(CEM)
+	cat $(CEM) > $@
+cemuse.f    : $(CEMU)
+	cat $(CEMU) > $@
+genrl.f     : $(GEN)
+	cat $(GEN) > $@
+gem.f       : $(GEM)
+	cat $(GEM) > $@
+out.f       : $(OUT)
+	cat $(OUT) > $@
+precof.f    : $(PRE)
+	cat $(PRE) > $@
+#
+blkdata.o: blkdata.f
+	$(F77) $(F77FLGSC) blkdata.f
+cascad.o : cascad.f
+	$(F77) $(F77FLGSC) cascad.f
+cem03.o  : cem03.f
+	$(F77) $(F77FLGSC) cem03.f
+cemuse.o  : cemuse.f
+	$(F77) $(F77FLGSC) cemuse.f
+gem.o    : gem.f
+	$(F77) $(F77FLGSC) gem.f
+genrl.o  : genrl.f
+	$(F77) $(F77FLGSC) genrl.f
+out.o    : out.f
+	$(F77) $(F77FLGSC) out.f
+precof.o : precof.f
+	$(F77) $(F77FLGSC) precof.f
+#

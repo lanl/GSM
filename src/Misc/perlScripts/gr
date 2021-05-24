@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+
+##### gr  var1 [var2...]
+
+### for now, only works on files in current dir
+
+### get file list for searches, headers first, then src
+@headers = <*.h *.hh>;
+@progs   = <*.F90 *.f90 *.F77 *.f77 *.F *.f *.c *.cc *.cpp *.C>;
+@files = (@headers, @progs);
+#
+if( @files<=0 ) {die("*** gr: no files to search?\n"); }
+if( @ARGV <=0 ) {die("*** gr: search for what ?  \n"); }
+@args = @ARGV;
+while( $arg = shift(@args) ) {
+  #
+  print `banner "$arg"`;
+  @ARGV = @files;
+  if( $arg =~ /^(\w+)=/ ) {
+    $arg = $1; 
+    eval "while( <> ) {
+            if( /(\\W|^)$arg(?:\\(.*\\))?\\s*=[^=]/i ) {
+              print \"\$ARGV\\t(\$.):\\t\",\$_ ;
+            }
+            if( eof ) { close(ARGV); }
+          }"
+  }
+  else {
+    eval "while( <> ) {
+            if( /(\\W|^)$arg\\W/i ) {
+              print \"\$ARGV\\t(\$.):\\t\",\$_ ;
+            }
+            if( eof ) { close(ARGV); }
+          }"
+  }
+}
+exit;
+

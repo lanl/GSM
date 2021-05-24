@@ -1,0 +1,124 @@
+# Doxyfile 1.8.15
+#---------------------------------------------------------------------------
+# The Generalized Spallation Model (GSM) Event Generator
+#---------------------------------------------------------------------------
+# Edit the TAGs below to modify the documentation generated via Doxygen.
+#
+# To generate documentation, navigate to the /Docs/ directory in a terminal
+# and simply type:
+#    doxygen Doxyfile.in
+#
+#---------------------------------------------------------------------------
+# User options:
+#---------------------------------------------------------------------------
+PROJECT_NAME           = "The Generalized Spallation Model Event Generator"
+PROJECT_BRIEF          = "The GSM Event Generator"
+PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+OUTPUT_DIRECTORY       = ./    # Generate in the /Docs/ directory 
+CREATE_SUBDIRS         = Yes   # Generates a 'cleaner' directory layout
+OUTPUT_LANGUAGE        = English   # Language documentation written in
+
+
+#---------------------------------------------------------------------------
+# Configuration options related to the input files
+#---------------------------------------------------------------------------
+OPTIMIZE_FOR_FORTRAN   = YES
+INPUT                  = @PROJECT_SOURCE_DIR@/ReadMe.md \
+                         @PROJECT_SOURCE_DIR@/src
+USE_MDFILE_AS_MAINPAGE = @PROJECT_SOURCE_DIR@/ReadMe.md
+RECURSIVE              = YES
+EXCLUDE                = @PROJECT_SOURCE_DIR@/cmake
+# IMAGE_PATH             = @PROJECT_SOURCE_DIR@/Docs/images
+FILE_PATTERNS          = *.f \
+                         *.F \
+                         *.f90 \
+                         *.F90 \
+                         *.fpp \
+                         *.FPP \
+                         *.inc \
+                         *.md
+#                         *.cc \
+#                         *.hh \
+#                         *.py \
+#                         *.pyw
+#
+EXTENSION_MAPPING      = inc=Fortran
+
+#---------------------------------------------------------------------------
+# Configuration options related to warning and progress messages
+#---------------------------------------------------------------------------
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the HTML output
+#---------------------------------------------------------------------------
+GENERATE_HTML          = YES
+HTML_OUTPUT            = Docs_html
+GENERATE_TREEVIEW      = YES
+
+#---------------------------------------------------------------------------
+# Configuration options related to the LaTeX output
+#---------------------------------------------------------------------------
+GENERATE_LATEX         = YES
+LATEX_OUTPUT           = Docs_latex
+
+#---------------------------------------------------------------------------
+# Configuration options related to the man page output
+#---------------------------------------------------------------------------
+GENERATE_MAN           = NO
+MAN_OUTPUT             = Docs_man
+# MAN_SUBDIR             =
+
+#---------------------------------------------------------------------------
+# Configuration options related to source browsing
+#---------------------------------------------------------------------------
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+REFERENCES_LINK_SOURCE = YES
+
+
+#---------------------------------------------------------------------------
+# Configuration options related to the dot tool
+# NOTE: Settings are configure to provide the most UML-looking diagrams
+#---------------------------------------------------------------------------
+HAVE_DOT               = @HAVE_DOT@
+DOT_NUM_THREADS        = 0
+COLLABORATION_GRAPH    = YES
+UML_LOOK               = YES
+UML_LIMIT_NUM_FIELDS   = 50
+TEMPLATE_RELATIONS     = YES
+DOT_GRAPH_MAX_NODES    = 100
+MAX_DOT_GRAPH_DEPTH    = 0
+DOT_TRANSPARENT        = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+CLASS_DIAGRAMS         = YES
+
+
+#---------------------------------------------------------------------------
+# Other misc. options
+#---------------------------------------------------------------------------
+ABBREVIATE_BRIEF       = "The $name class" \
+                         "The $name widget" \
+                         "The $name file" \
+                         is \
+                         provides \
+                         specifies \
+                         contains \
+                         represents \
+                         a \
+                         an \
+                         the
+BUILTIN_STL_SUPPORT    = YES
+DISTRIBUTE_GROUP_DOC   = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_ANON_NSPACES   = YES
+

@@ -1,0 +1,441 @@
+
+      subroutine auxl (angmom, bf0, ln, erotev, delu)
+
+! ======================================================================
+!
+!   This subroutine takes care of some bookkeeping related to
+!   angular momentum, rotational energy and fission-barrier heights.
+!   It was extracted from the old PRECOF routine.
+!
+!   CALLS: BF 
+!
+!    Written by A. J. Sierk, LANL T-16, October, 2003.
+!    Modified to remove filling of eb and egs arrays; AJS, Feb, 2005.
+!    Edited by AJS, LANL T-2, December, 2011.
+!    Edited by LMK, XCP-3, July 2013 (included error protection)
+!
+! ======================================================================
+
+      implicit real*8 (a-h, o-z)
+      integer*4 ia1, iz1, ln, ln1
+      integer*8 icnt, icntr
+
+! ======================================================================
+
+      dimension angmom(3)
+
+      common /ajsbar/  ainit, zinit, eb(30,70,100), egs(30,70,100)
+      common /counter/ icntr, icnt
+      common /bl1003/  u, a, z
+
+      data zro /0.d0/
+
+! ======================================================================
+
+      delu = zro
+      um2 = max(angmom(1)**2 + angmom(2)**2 + angmom(3)**2, zro)
+      ln = nint(sqrt(um2))
+      iz1 = nint(zinit - z) + 1
+      ia1 = nint(ainit - a) + 1
+      ln1 = ln + 1
+      if (iz1 > 0 .and. ia1 > 0) then
+        if (iz1 <= 30 .and. ia1 <= 70 .and. ln1 <= 100) then
+          bf0 = eb(iz1, ia1, ln1)
+          egs0 = egs(iz1, ia1, ln1)
+        else
+          bf0 = bf (a, z, ln, egs0)
+        endif
+      else
+        bf0 = bf (a, z, ln, egs0)
+      endif
+      erotev = egs0
+!   For very light nuclei, limit the rotational energy to 1 MeV
+!   per nucleon; renormalize L and excitation energy.
+      if (erotev > a) then
+        if (erotev < 1.0d-12 .and. erotev > -1.0d-12) then
+	  erotev = 1.0d-12
+	  print *, 'Divide by zero error in preqaux.f line 58'
+        end if
+        ratio = sqrt(abs(a/erotev))
+        delu = erotev - a
+        erotev = a
+        angmom(1) = ratio*angmom(1)
+        angmom(2) = ratio*angmom(2)
+        angmom(3) = ratio*angmom(3)
+        ln = nint(ratio*sqrt(um2))
+      endif
+
+! ======================================================================
+      end
+
+      subroutine preqaux (a, z, am, erotev, rr)
+
+! ======================================================================
+!
+!   This routine defines several quantities for the particle-
+!   emission channels needed for the preeqwuilibrium emission 
+!   calculation.  Extracted from the old PRECOF routine.
+!
+!   CALLED BY: PRECOF
+!   CALLS: DELTAM FAM MOLNIX CB_NASA
+!
+!    Written by A. J. Sierk, LANL T-16, October, 2003.
+!    Edited by AJS, LANL T-2, December, 2011.
+!    Edited by LMK, XCP-3, July 2013 (inclued error protection)
+!    Modified by LMK, XCP-3, July 2014, to include new NASA coul. bar. and x_sec
+!
+! ======================================================================
+
+! LMK 07/2014
+      use coulomb_barrier, only: cb_nasa
+!      use fund_data, only: r_rms
+
+      implicit real*8 (a-h, o-z)
+      integer*4 i, ia, iaa, iaj, iunj, izj, j
+      integer*8 icnt, icntr 
+      real*8 molnix
+      real (8) :: zfj, afj, zj
+      real (8) :: u,a,z,vj,bj, uej, exn, aj
+      real (8) :: w				! Total energy in center-of-momentum frame (MeV)	LMK 07/2014
+      real (8) :: t_cm				! Kinetic energy in center-of-momentum frame (MeV)		LMK 07/2014
+
+! ======================================================================
+
+      common /ato3rd/  a3rd(300)
+      common /bl1003/  u, at, zt
+      common /bl1005/  aj(66), ajthr(66)
+      common /bl1006/  zj(66)
+      common /bl1008/  dl, dlmn(66)
+      common /bl1009/  afj(67)
+      common /bl1010/  zfj(66)
+      common /bl1011/  vj(66)
+      common /bl1015/  rj(67), uej(66), pevapj(66)
+      common /bl1016/  cc(66)
+      common /bl1018/  afjthr(67), athrd
+      common /blalj/   alj(66), ami(66)
+      common /blbj/    bj(67)
+      common /blr0/    r0
+!      common /br0j/    r0j(66), bn
+      common /counter/ icntr, icnt
+      common /redmas/  emured(300,28), emuredf(300,28)
+      common /redmas2/ redcom(67), redpre(66) 
+      common /npreqtyp/ npreqtyp		!LMK 07/2012
+
+      data zro, one, two, for /0.d0, 1.d0, 2.d0, 4.d0/
+
+! ======================================================================
+
+      rr = zro
+      iaa = nint(a)
+!
+      do i = 1,npreqtyp		!LMK 07/2012
+!   kkg  04/15/2015
+        if(aj(i) > a/two.or.zj(i) > z/two)  then
+          bj(i) = zro
+          rj(i) = zro
+          vj(i) = zro
+          pevapj(i) = zro
+          go to 10
+        endif   
+        afj(i) = a - aj(i)
+        ia = nint(afj(i))
+        iaj = nint(aj(i))
+!   kkg  04/15/2015
+        if(ia < 1.or.ia > 300) then
+           write(16,*) 'PREQAUX: ia=',ia,i,npreqtyp,a,z,aj(i),zj(i),iaj 
+           stop
+        endif       
+        afjthr(i) = a3rd(ia)
+        zfj(i) = z - zj(i)
+        redcom(i) = emuredf(iaa,iaj)
+! Transform from lab frame to cm frame, LMK 07/2014
+        w = sqrt( (aj(i)*938.)**2 + (afj(i)*938.)**2 + 2.*afj(i)*938.*(u + 938.*aj(i)) )
+        t_cm = w - (938.*aj(i) + 938.*afj(i))
+! LMK 12/2012, to fix emuredf=zero and redpre div/0 bug
+	if (redcom(i) <= 1.e-12) redcom(i) = 1.e-12
+        redpre(i) = sqrt(abs(one/redcom(i)))
+        if (i <= 2) redpre(i) = redcom(i)
+        if (afj(i) < for .or. zfj(i) < two .or. zfj(i) >= afj(i)) then
+          bj(i) = zro
+          rj(i) = zro
+          vj(i) = zro
+          pevapj(i) = zro
+          go to 10
+        endif
+        unj = afj(i) - zfj(i)
+        iunj = nint(unj)
+        izj = nint(zfj(i))
+        pevapj(i) = molnix (izj, iunj, 3)
+! "Free" energy in the i'th particle-emission channel:
+        uej(i) = u - pevapj(i) - erotev
+        if (uej(i) <= one) then
+          rj(i) = zro
+        else
+          ami(i) = fam (afj(i), zfj(i), uej(i), i)
+!          vj(i) = colomb8 (i, r0, am)
+	  call cb_nasa(zfj(i), afj(i), zj(i), aj(i), t_cm, vj(i))		! NASA Coulomb Barriers, LMK 7/2014
+! Binding energy
+          bj(i) = deltam (afj(i), zfj(i)) - (dl - dlmn(i))
+!   Free "thermal" energy at the Coulomb barrier
+          rj(i) = uej(i) - (bj(i) + vj(i))
+          rj(i) = max (zro, rj(i))
+        endif
+        rr = rr + rj(i)
+   10   continue
+        end do
+      redcom(67) = one			!LMK 07/2012
+      afj(67) = a			!LMK 07/2012
+      afjthr(67) = athrd		!LMK 07/2012
+
+! ======================================================================
+      end
+
+      subroutine eqdecy (a, z, ue, pnx, pny, pnz)
+
+! ======================================================================
+!
+!    This routine handles the statistical decay of the compound nucleus
+!    by calling the GEMDEC routine to use the GEM2 decay model of
+!    Furihata.  It was extracted from the old PRECOF routine from
+!    the cem2k+GEM2 code.
+!
+!    CALLED BY: PRECOF
+!    CALLS: GEMDEC MOLNIX
+!
+!    Written by A. J. Sierk, LANL T-16, October, 2003.
+!    Modified by K. K. Gudima, November, 2004.
+!    Edited by AJS, January, 2005.
+!    Edited by AJS, LANL T-2, December, 2011.
+!    Edited by LMK, XCP-3, July 2013 (included error protection)
+! 
+! ======================================================================
+
+      implicit real*8 (a-h, o-z)
+      integer*4 ia, in, inj, iorg, iz, izj, kfr, ktot, nfr, numf
+      integer*8 icnt, icntr
+      real*8 molnix
+
+! ======================================================================
+
+      dimension beta(3)
+
+      common /blok77/  spt(5,150)
+      common /counter/ icntr, icnt
+      common /gemspt/  ares, zres, ures, eres, sptg(6,300), numf 
+      common /iorgem/  iorg(300)
+      common /kktot/   ktot
+      common /mnuc/    emnucm, emnucg, emnucb, emnuct, emneut, emprot
+      common /pi/      pi, twpi
+      common /zapp/    parz(6,150)
+
+      data zro,  one,  two,  thr,  for,  fiv,  six,  thsn  &
+        /0.d0, 1.d0, 2.d0, 3.d0, 4.d0, 5.d0, 6.d0, 1.d3/
+
+! ======================================================================
+
+          ia = nint(a)
+          iz = nint(z)
+          un = a - z
+          in = nint(un)
+          in = max(1,in)
+          iz = max(1,iz)
+          emx = molnix (iz, in, 2)
+          if (iz > 7 .and. in > 7) then
+            remn = a*emnucb + emx/thsn
+          else
+            remn = a*emnuct + emx/thsn
+          endif
+!  Total recoil energy and kinetic energy of entire nucleus:
+          pmod = sqrt(pnx**2 + pny**2 + pnz**2)
+          e = sqrt(pmod**2 + remn**2)
+          eresa = (e - remn)*thsn 
+          if (a < 1.0d-12 .and. a > -1.0d-12) then
+	    a = 1.0d-12
+  	    print *, 'Divide by zero error in preqaux.f line 246'
+          end if
+          uinit = ue/a
+          if (pmod < 1.0d-12 .and. pmod > -1.0d-12) then
+	    pmod = 1.0d-12
+  	    print *, 'Divide by zero error in preqaux.f line 251,252,253'
+          end if
+          beta(1) = pnx/pmod
+          beta(2) = pny/pmod
+          beta(3) = pnz/pmod
+!   Use GEMDEC instead of CEM evaporation logic:
+          call gemdec (ia, iz, uinit, eresa, beta)
+!
+          ue = ures
+          a = ares
+          z = zres
+          if (numf < 1) return
+            do nfr = 1,numf
+            ktot = ktot + 1
+            kfr = ktot
+!  KKG 11/15/04
+            if (kfr > 150) then
+              write ( *, 1000) icntr
+              return
+            endif
+
+            zfr = sptg(1,nfr)
+            afr = sptg(2,nfr)
+            izj = nint(zfr)
+            inj = nint(afr - zfr)
+            enfr = dble(inj)
+            if (izj.ne.0) then
+              emxp = molnix (izj, inj, 2)
+            else
+              emxp = 8.071d0
+            endif
+            emfr = emnuct*afr + emxp/thsn - zfr*0.000511004d0
+            ctfr = sptg(6,nfr)
+            if (abs(ctfr) >= one) then
+              ctfr = sign(one,ctfr)
+              stfr = zro
+              tefr = zro
+              if (ctfr < zro) tefr = pi 
+            else 
+              stfr = sqrt(abs(one - ctfr**2))
+              tefr = atan2(stfr,ctfr)
+            endif 
+            if (abs(stfr) > 1.d-10) then
+              if (stfr < 1.0d-12 .and. stfr > -1.0d-12) then
+	        stfr = 1.0d-12
+  	        print *, 'Divide by zero error in preqaux.f line 296,297'
+              end if
+              cffr = sptg(4,nfr)/stfr
+              sffr = sptg(5,nfr)/stfr
+              if (abs(cffr) >= one) then
+                cffr = sign(one,cffr)
+                if (cffr <= zro) fifr = pi
+                if (cffr > zro) fifr = zro
+                sffr = zro
+              else
+                fifr = atan2(sffr,cffr)
+                if (fifr < zro) fifr = twpi + fifr
+              endif
+            else
+              fifr = zro
+              cffr = one
+              sffr = zro
+            endif
+            tkfr = sptg(3,nfr)
+            if (izj == 0 .and. inj == 1) parz(1,kfr) = one
+            if (izj == 1 .and. inj == 0) parz(1,kfr) = two
+            if (izj == 1 .and. inj == 1) parz(1,kfr) = thr
+            if (izj == 1 .and. inj == 2) parz(1,kfr) = for
+            if (izj == 2 .and. inj == 1) parz(1,kfr) = fiv
+            if (izj == 2 .and. inj == 2) parz(1,kfr) = six
+            if (izj > 2 .or. inj > 2)  parz(1,kfr) = thsn*zfr + enfr
+            parz(2,kfr) = tkfr/thsn 
+            parz(3,kfr) = tefr
+            parz(4,kfr) = fifr
+            parz(5,kfr) = thsn 
+            if (iorg(nfr) == 1) parz(5,kfr) = 2000.d0
+            parz(6,kfr) = zfr  
+            spt(1,kfr) = stfr
+            spt(2,kfr) = ctfr
+            spt(3,kfr) = tkfr/thsn 
+            spt(4,kfr) = zfr
+            spt(5,kfr) = emfr
+            end do  
+          return
+
+! ======================================================================
+
+ 1000 format (/5x,'In EQDCY, the number of emitted particles', &
+        'exceeds 150 after evaporation: icntr = ',i7)
+
+! ======================================================================
+      end
+
+      subroutine restor1 (a, z, ktot) 
+
+! ======================================================================
+!
+!    Storing the properties of the residual nucleus in the spt and parz
+!    arrays for nuclei which do not pass through GEMDEC.
+!
+!    Calls:  ATAN2, SIGN
+!
+!    Written by A. J. Sierk, LANL T-16, March, 2004.
+!    Edited by AJS, LANL T-2, December, 2011.
+!    Edited by LMK, XCP-3, July 2013 (included error protection)
+!
+! ======================================================================
+
+      implicit real*8 (a-h, o-z)
+      integer*4 iaj, inj, izj, ktot
+
+! ======================================================================
+
+      common /blok77/ spt(5,150)
+      common /pi/     pi, twpi
+      common /resid/  angmom(3), v(3), remn
+      common /trec/   trec
+      common /zapp/   parz(6,150)
+
+      data zro,  one,  two,  thr,  for,  fiv,  six, thsn  &
+        /0.d0, 1.d0, 2.d0, 3.d0, 4.d0, 5.d0, 6.d0, 1.d3/
+
+! ======================================================================
+
+      ktot = ktot + 1
+      absv = sqrt (v(1)**2 + v(2)**2 + v(3)**2)
+      if (absv < 1.0d-12 .and. absv > -1.0d-12) then
+	absv = 1.0d-12
+  	print *, 'Divide by zero error in preqaux.f line 379'
+      end if
+      ctfr = v(3)/absv
+      if (abs(ctfr) >= one) then
+        ctfr = sign(one,ctfr)
+        stfr = zro
+        tefr = zro
+        if (ctfr < zro) tefr = pi 
+      else 
+        stfr = sqrt(abs(one - ctfr**2))
+        tefr = atan2(stfr,ctfr)
+      endif 
+      if (abs(stfr) > 1.d-10) then
+        cffr = v(1)/(absv*stfr)
+        sffr = v(2)/(absv*stfr)
+        if (abs(cffr) >= one) then
+          cffr = sign(one,cffr)
+          if (cffr <= zro) fifr = pi
+          if (cffr > zro) fifr = zro
+          sffr = zro
+        else
+          fifr = atan2(sffr,cffr)
+          if (fifr < zro) fifr = twpi + fifr
+        endif
+      else
+        fifr = zro
+        cffr = one
+        sffr = zro
+      endif
+      izj = nint(z)
+      iaj = nint(a)
+      inj = iaj - izj
+      en = a - z
+!  n, p, d, t, He3, He4, any other product:
+      if (izj == 0 .and. inj == 1) parz(1,ktot) = one 
+      if (izj == 1 .and. inj == 0) parz(1,ktot) = two
+      if (izj == 1 .and. inj == 1) parz(1,ktot) = thr
+      if (izj == 1 .and. inj == 2) parz(1,ktot) = for
+      if (izj == 2 .and. inj == 1) parz(1,ktot) = fiv
+      if (izj == 2 .and. inj == 2) parz(1,ktot) = six
+      if (izj > 2 .or. inj > 2)  parz(1,ktot) = thsn*z + en
+      parz(2,ktot) = trec/thsn 
+      parz(3,ktot) = tefr
+      parz(4,ktot) = fifr
+      parz(5,ktot) = thsn  
+      parz(6,ktot) = z  
+      spt(1,ktot) = stfr
+      spt(2,ktot) = ctfr
+      spt(3,ktot) = trec/thsn 
+      spt(4,ktot) = z
+      spt(5,ktot) = remn
+      return
+
+! ======================================================================
+      end
