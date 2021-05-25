@@ -1,0 +1,1541 @@
+
+      subroutine vlobd
+
+! ======================================================================
+!
+!   Accumulate events in 218 particle-emission output channels
+!   and in spectrum and angular distribution arrays.
+!
+!   All variables referring to coalescence products have a "co" in them.
+!   Added separate arrays for spallation residue particle emission and
+!   spectra, fission-fragment evaporation, and prefission spectra. 
+!   (AJS 09/22/03)
+!
+!   CEM95 written by S. G. Mashnik
+!
+!   Edited by A. J. Sierk,  LANL  T-2  February, 1996.
+!   Modified by A. J. Sierk  May-June, 1996.
+!   Modified by SGM at 06/16/2000
+!   Modified by KKG in 10/2001 , 2/2003, and 9/2003.
+!   "Last change": 13-AUG-2003 by NVMokhov
+!   Modified by AJS for "fission", "spallation" and prefission  arrays;
+!       9/2003.
+!   Modified by AJS to correct the calculation of the mass number of
+!       the residual nucleus, 3/5/04.
+!  [Modified to tally data for fission events only when idel = 2,
+!       AJS, 4/16/04.]  OBSOLETE
+!   Modified to tally data for fission events only when mpyld = 2,
+!       AJS, 5/13/05.
+!   Modified to tally data for different stages of the reaction when
+!       misy = 3 by K. K. Gudima, November-December, 2004.
+!   Edited by AJS, January, 2005.
+!   Removed printout of warning for fission fragments, AJS, June, 2005.
+!   Edited by AJS, LANL T-2, December, 2011.
+!   Edited by LMK, XCP-3, July 2013 (included error protection)
+!
+! ======================================================================
+!
+!  Definition of spt:
+!                       spt(1,k) = sin(theta.k)
+!                       spt(2,k) = cos(theta.k)
+!                       spt(3,k) = kineti! energy of particle k (GeV)
+!                       spt(4,k) = charge of particle k
+!                       spt(5,k) = rest mass of particle k
+!  Definition of parz:
+!                       parz(1,k) = particle type #; 1-9 for n-pi+;
+!                                   A + 999*Z for larger fragments and
+!                                   residual nuclei. (1000Z + N)
+!                       parz(2,k) = kineti! energy of particle k (GeV)
+!                       parz(3,k) = theta of particle k
+!                       parz(4,k) = phi of particle k
+!                       parz(5,k) = index: <100 for cascade, 
+!                       negative for hole;
+!                       = 100 for preq., or 
+!                       = 200 for coalescence.
+!                       = 1000 for evaporation from spallation residue
+!                              (and for residue itself).
+!                       = 1500 for Fermi breakup.
+!                       = 2000 for evaporation from fission product
+!                              (and for fragments themselves).
+!                       parz(6,k) = electric charge of particle k
+!
+! ======================================================================
+
+      implicit real*8 (a-h, o-z)
+      integer*4 i, ic, icp, ida, idel, idz, ifa, ifam, ifz, ip, ipar,	&
+          ipar1, ipar2, ipoc, iq, iu, it, itet
+      integer*4 j, ju, jt, l0, m, mang, mb0, mchy, mdubl, me0,	&
+          misy, mpyld, ms0, mspec, n, ncoal, nevtype
+      integer*4 nd, nhe3, nhe4, nn, nnc, nne, nnp, nnpof, nnprf, np,	&
+          npimin, npiplu, npizer,	&
+          nt, nt2, nt3, ntet, nti, ntt
+      integer*8 icnt, icntr
+      real*8 mil
+      logical doit, fisevent, fisonly, itt, test
+
+      real*8 temp
+
+! ======================================================================
+
+      common /begin/   cm0, t0gev, me0, mb0, ms0, l0
+      common /blok77/  spt(5,150)
+      common /coalp/   pcoal(4), ncoal(8)
+      common /counter/ icntr, icnt
+      common /d2sdto/  tet1(10), tet2(10), te1(200), te2(200), dtt(200),	&
+                 se(200), dtdo(200,10), d2spec(9,10,200),	&
+                 d2spe(14,10,200), ntt, ntet, nt2, nt3, nti(4)
+      common /degrad/  degrad
+      common /dele/    sfu, wf, fusion, sigfw
+      common /deltt/   dteta
+      common /ejectl/  omega(70), ifa(70), ifz(70)
+      common /menu/    mspec, mpyld, mchy, misy, mdubl, mang
+      common /menu1/   ipar1, ipar2, ifam, idel, fisonly
+      common /nevtyp/  nevtype
+      common /o/       anucl, znucl, eps, vpi, rsm(10), rbig(10),	&
+                 rhop(10), rhon(10), af(10), tfp(10), tfn(10), n
+      common /rescoa/  speco(4,200), angco(4,20), d2speco(4,10,200)
+      common /resfis/  spef(6,200), angf(6,20), d2spef(6,10,200)
+      common /resmac/  spe(14,200), an(14,20)
+      common /respal/  specsp(6,200), angsp(6,20), d2spesp(6,10,200)
+      common /resprf/  specpf(6,200), angpf(6,20), d2spepf(6,10,200)
+      common /result/  spec(9,200), ang(9,20), chan(218), dadz(351,151)
+!   KKG 11/13/04
+      common /result1/ dadz4(4,351,151)  
+
+      common /tkftot/  totke
+      common /zapp/    parz(6,150)
+
+      data zro, one, two, thr, for, mil /0.d0, 1.d0, 2.d0, 3.d0, 4.d0, 	&
+                             1.d3/
+      data fiv, ten /5.d0, 10.d0/
+
+! ======================================================================
+
+      zbeg = znucl + fiv
+      abeg = anucl + fiv
+      totas = zro
+      totzs = zro
+      amaxx = zro
+        do i = 1,nevtype
+        amaxx = max (amaxx, dble(ifa(i)))
+        end do
+      fisevent = fusion == one
+
+      if (mspec > 0 .or. mang > 0 .or. mdubl > 0 .or. mchy > 0 .or.	&
+    mpyld > 0 .or. misy > 0) then
+        nn = 0
+        np = 0
+        nd = 0
+        nt = 0
+        nhe3 = 0
+        nhe4 = 0
+        npimin = 0
+        npizer = 0
+        npiplu = 0
+        nnc = 0
+        nnp = 0
+        nne = 0
+        nnprf = 0
+        nnpof = 0
+!  kkg 04/15/2015
+          asum=zro
+          zsum=zro
+!                    
+          do m = 1,150
+          am = zro
+          zm = zro
+          if (spt(5,m) < 0.001d0) go to 40
+          ipar = nint(parz(1,m))
+          zm = spt(4,m)
+          if (ipar < 3) then
+            am = one
+          elseif (ipar < 4) then
+            am = two
+          elseif (ipar < 6) then
+            am = thr
+          elseif (ipar == 6) then
+            am = for
+          elseif (ipar > 9) then
+!   Modified calculation of mass number of residual nucleus:
+            am = parz(1,m) - 999.d0*zm 
+          endif
+!  kkg 04/15/2015
+          asum=asum+am
+          zsum=zsum+zm
+!          
+          tet = parz(3,m)*degrad
+          tt = parz(2,m)*mil
+          ipoc = nint(parz(5,m))
+          totas = totas + am
+          totzs = totzs + zm
+          doit = (fisonly.and.fisevent) .or. .not.fisonly
+          if (doit) then
+            if (am > amaxx .and. fisevent) totke = totke + tt
+            if (ipar <= 6 .or. (ipar > 9 .and. misy > 0)) then
+!   Accumulate nuclide production information:
+              da = abeg - am
+              dz = zbeg - zm
+              ida = nint(da) + 1
+              ida = min(nint(abeg), ida)
+              ida = min(ida, 350)
+              idz = nint(dz) + 1
+              idz = min(nint(zbeg) + 1, idz)
+              idz = min(idz, 148)
+!  04/15/2015
+              if (am >= zm)	then
+                dadz(ida,idz) = dadz(ida,idz) + one
+                dadz(351,idz) = dadz(351,idz) + one
+                dadz(350,idz) = dadz(350,idz) + tt
+                dadz(349,idz) = dadz(349,idz) + tt**2
+                dadz(ida,150) = dadz(ida,150) + one
+                dadz(ida,151) = dadz(ida,151) + tt
+                dadz(ida,149) = dadz(ida,149) + tt**2
+              endif
+              if (am >= zm) then
+                ama = spt(5,m)
+                eaz = parz(2,m) + ama
+                paz = sqrt(abs(eaz**2 - ama**2))
+		        temp = eaz*spt(2,m)
+	            if (temp < 1.0d-12 .and. temp > -1.0d-12) then
+		          temp = 1.0d-12
+	  	          print *, 'Divide by zero error in vlobd.f90 line 193'
+	            end if
+!   kkg  04/15/2015	            
+!               vz = paz/temp
+                vz=paz*spt(2,m)/eaz 
+                dadz4(1,ida,idz) = dadz4(1,ida,idz) + tt
+                dadz4(1,351,idz) = dadz4(1,351,idz) + tet
+                dadz4(1,350,idz) = dadz4(1,350,idz) + vz
+                dadz4(1,ida,151) = dadz4(1,ida,151) + tet 
+                dadz4(1,ida,150) = dadz4(1,ida,150) + vz
+                dadz4(2,ida,idz) = dadz4(2,ida,idz) + tt**2
+                dadz4(2,351,idz) = dadz4(2,351,idz) + tet**2
+                dadz4(2,350,idz) = dadz4(2,350,idz) + vz**2
+                dadz4(2,ida,151) = dadz4(2,ida,151) + tet**2 
+                dadz4(2,ida,150) = dadz4(2,ida,150) + vz**2
+                if (tet <= 90.0d0) then
+                  dadz4(3,ida,idz) = dadz4(3,ida,idz) + one
+                  dadz4(3,351,idz) = dadz4(3,351,idz) + one
+                  dadz4(3,350,idz) = dadz4(3,350,idz) + tt
+                  dadz4(3,349,idz) = dadz4(3,349,idz) + tt**2
+                  dadz4(3,ida,150) = dadz4(3,ida,150) + one
+                  dadz4(3,ida,151) = dadz4(3,ida,151) + tt
+                  dadz4(3,ida,149) = dadz4(3,ida,149) + tt**2
+                else   
+                  dadz4(4,ida,idz) = dadz4(4,ida,idz) + one
+                  dadz4(4,351,idz) = dadz4(4,351,idz) + one
+                  dadz4(4,350,idz) = dadz4(4,350,idz) + tt
+                  dadz4(4,349,idz) = dadz4(4,349,idz) + tt**2
+                  dadz4(4,ida,150) = dadz4(4,ida,150) + one
+                  dadz4(4,ida,151) = dadz4(4,ida,151) + tt
+                  dadz4(4,ida,149) = dadz4(4,ida,149) + tt**2
+                endif
+              endif
+!  End changes 11/13/04.
+              if (ipar > 9) go to 30
+            endif
+          endif
+          iu = 0
+          it = 0
+          itet = 0
+          if (mang > 0 .or. mdubl > 0) then
+	    if (dteta < 1.0d-12 .and. dteta > -1.0d-12) then
+	      dteta = 1.0d-12
+	      print *, 'Divide by zero error in vlobd.f90 line 235'
+	    end if
+            ytet = tet/dteta
+            itet = int(ytet) + 1
+            itet = min (itet, 19)
+          endif
+          if ((mspec > 0 .or. mdubl > 0) .and. parz(1,m) < ten) then
+              do jt = 1,ntt
+              if (tt >= te1(jt) .and. tt < te2(jt)) go to 10
+              end do  
+            write (16, 1000) m, (spt(j,m), j=1,5), (parz(j,m), j=1,6)
+            jt = ntt
+   10       it = jt
+          endif
+          itt = it > 0 .and. it <= ntt
+          if (mdubl > 0) then
+            iu = 0
+              do ju = 1,ntet
+              if (tet >= tet1(ju) .and. tet < tet2(ju)) then
+                iu = ju
+                go to 20
+              endif
+              end do  
+   20       continue
+          endif
+!  Change to accumulate multiplicities ONLY on fission events;
+!  AJS  4/16/04; KKG 11/13/04:
+          if (doit) then
+            if (ipar == 1) then
+              nn = nn + 1
+              if (ipoc < 100) then
+                ip = 1
+                nnc = nnc + 1
+              elseif (ipoc == 100) then
+                ip = 2
+                nnp = nnp + 1
+              elseif (ipoc > 100) then
+                ip = 3
+                if (.not.fisevent) then
+                  if (ipoc >= 1000) nne = nne + 1
+                else
+                  if (ipoc == 1000) nnprf = nnprf + 1
+                  if (ipoc == 2000) nnpof = nnpof + 1
+                endif             
+              endif
+            elseif (ipar == 2) then
+              np = np + 1
+              if (ipoc < 100) then
+                ip = 4
+              elseif (ipoc == 100) then
+                ip = 5
+              elseif (ipoc > 100) then
+                ip = 6
+              endif
+            elseif (ipar == 3) then
+              nd = nd + 1
+              if (ipoc == 200) pcoal(1) = pcoal(1) + one
+              if (ipoc < 1000) then
+                if (ipoc == 100) then
+                  ip = 7
+!               else
+!                 ip = 15
+                endif
+              else
+                ip = 8
+              endif
+            elseif (ipar == 4) then
+              nt = nt + 1
+              if (ipoc == 200) pcoal(2) = pcoal(2) + one
+              if (ipoc < 1000) then
+                if (ipoc == 100) then
+                  ip = 9
+!               else
+!                 ip = 16
+                endif
+              else
+                ip = 10
+              endif
+            elseif (ipar == 5) then
+              nhe3 = nhe3 + 1
+              if (ipoc == 200) pcoal(3) = pcoal(3) + one
+              if (ipoc < 1000) then
+                if (ipoc == 100) then
+                  ip = 11
+!               else
+!                 ip = 16
+                endif
+              else
+                ip = 12
+              endif
+            elseif (ipar == 6) then
+              nhe4 = nhe4 + 1
+              if (ipoc == 200) pcoal(4) = pcoal(4) + one
+              if (ipoc < 1000) then
+                if (ipoc == 100) then
+                  ip = 13
+!               else
+!                 ip = 17
+                endif              
+              else
+                ip = 14
+              endif
+            elseif (ipar >= 7) then
+              if (ipar == 7) then
+                npimin = npimin + 1
+              elseif (ipar == 8) then
+                npizer = npizer + 1
+              elseif (ipar == 9) then
+                npiplu = npiplu + 1
+              endif
+            endif
+          endif
+!  CHANGE TO ACCUMULATE SPECTRA ONLY ON FISSION EVENTS;
+!  AJS  4/01/04:
+          test = ipar <= 9
+          if (fisonly) test = test.and.fisevent
+          if (test) then
+            spec(ipar,nt2) = spec(ipar,nt2) + tt
+            spec(ipar,nt3) = spec(ipar,nt3) + one
+            ang(ipar,20) = ang(ipar,20) + one
+            if (itt) spec(ipar,it) = spec(ipar,it) + one
+            if (itet > 0) ang(ipar,itet) = ang(ipar,itet) + one
+            if (iu > 0) then
+              d2spec(ipar,iu,nt2) = d2spec(ipar,iu,nt2) + tt
+              d2spec(ipar,iu,nt3) = d2spec(ipar,iu,nt3) + one
+              if (itt) d2spec(ipar,iu,it) = d2spec(ipar,iu,it) + one
+            endif
+          endif
+!  CHANGE TO ACCUMULATE SPECTRA ONLY ON FISSION EVENTS;
+!  AJS  4/01/04:
+!  KKG  11/17/04
+          test = ipar <= 6 .and. ip <= 14 .and. ipoc.ne.200
+          if (fisonly) test = test.and.fisevent
+          if (test) then
+            spe(ip,nt2) = spe(ip,nt2) + tt
+            spe(ip,nt3) = spe(ip,nt3) + one
+            an(ip,20) = an(ip,20) + one
+            if (itt) spe(ip,it) = spe(ip,it) + one
+            if (itet > 0) an(ip,itet) = an(ip,itet) + one
+            if (iu > 0) then
+              d2spe(ip,iu,nt2) = d2spe(ip,iu,nt2) + tt
+              d2spe(ip,iu,nt3) = d2spe(ip,iu,nt3) + one
+              if (itt) d2spe(ip,iu,it) = d2spe(ip,iu,it) + one
+            endif
+          endif
+          if (ipar <= 6 .and. ipoc == 2000) then
+!   Evaporation from fission fragments:
+            spef(ipar,nt2) = spef(ipar,nt2) + tt
+            spef(ipar,nt3) = spef(ipar,nt3) + one
+            angf(ipar,20)  = angf(ipar,20) + one
+            if (itt) spef(ipar,it) = spef(ipar,it) + one
+            if (itet > 0) angf(ipar,itet) = angf(ipar,itet) + one
+            if (iu > 0) then
+              d2spef(ipar,iu,nt2) = d2spef(ipar,iu,nt2) + tt
+              d2spef(ipar,iu,nt3) = d2spef(ipar,iu,nt3) + one
+              if (itt) d2spef(ipar,iu,it) = d2spef(ipar,iu,it) + one
+            endif
+          endif
+          test = ipar <= 6 .and. ipoc >= 1000 .and. .not.fisevent
+          if (fisonly) test = .false.
+          if (test) then
+!   Evaporation from nonfissioning spallation residues;
+!   Also includes Fermi breakup:
+            specsp(ipar,nt2) = specsp(ipar,nt2) + tt
+            specsp(ipar,nt3) = specsp(ipar,nt3) + one
+            angsp(ipar,20)   = angsp(ipar,20)   + one
+            if (itt) specsp(ipar,it) = specsp(ipar,it) + one
+            if (itet > 0) angsp(ipar,itet) = angsp(ipar,itet) + one
+            if (iu > 0) then
+              d2spesp(ipar,iu,nt2) = d2spesp(ipar,iu,nt2) + tt
+              d2spesp(ipar,iu,nt3) = d2spesp(ipar,iu,nt3) + one
+              if (itt) d2spesp(ipar,iu,it) = d2spesp(ipar,iu,it) + one
+            endif
+          endif
+          if (ipar <= 6 .and. fisevent .and. ipoc == 1000) then
+!   Prefission evaporation:
+            specpf(ipar,nt2) = specpf(ipar,nt2) + tt
+            specpf(ipar,nt3) = specpf(ipar,nt3) + one
+            angpf(ipar,20)   = angpf(ipar,20)   + one
+            if (itt) specpf(ipar,it) = specpf(ipar,it) + one
+            if (itet > 0) angpf(ipar,itet) = angpf(ipar,itet) + one
+            if (iu > 0) then
+              d2spepf(ipar,iu,nt2) = d2spepf(ipar,iu,nt2) + tt
+              d2spepf(ipar,iu,nt3) = d2spepf(ipar,iu,nt3) + one
+              if (itt) d2spepf(ipar,iu,it) = d2spepf(ipar,iu,it) + one
+            endif
+          endif
+!  Coalescence:
+!  CHANGE TO ACCUMULATE SPECTRA ONLY ON FISSION EVENTS;
+!  AJS  4/01/04:
+          test = ipar >= 3 .and. ipar <= 6 .and. ipoc == 200
+          if (fisonly) test = test.and.fisevent
+          if (test) then
+            iq = ipar - 2
+            speco(iq,nt2) = speco(iq,nt2) + tt
+            speco(iq,nt3) = speco(iq,nt3) + one
+            angco(iq,20)  = angco(iq,20) + one
+            if (itt) speco(iq,it) = speco(iq,it) + one
+            if (itet > 0) angco(iq,itet) = angco(iq,itet) + one
+            if (iu > 0) then
+              d2speco(iq,iu,nt2) = d2speco(iq,iu,nt2) + tt
+              d2speco(iq,iu,nt3) = d2speco(iq,iu,nt3) + one
+              if (itt) d2speco(iq,iu,it) = d2speco(iq,iu,it) + one
+            endif
+          endif
+   30     continue
+          end do
+!  End of m DO loop ^
+   40   continue
+!  Check that A and Z are conserved following suggestion of
+!  G. McKinney and K. Gudima; print diagnostic on "info" file
+!  and to terminal.  AJS (02/07/06):
+      if (abs(totas - anucl - dble(mb0)) > 0.1d0 .or.	&
+    abs(totzs - znucl - dble(me0)) > 0.1d0) then
+!  kkg  04/15/2015    
+         write ( *, 1100) icntr, totzs, totas
+         write (16, 1100) icntr, totzs, totas
+         stop
+      endif
+!
+        if (mchy <= 0) go to 50
+        if (nt > 0) chan(214) = chan(214) + dble(nt)
+        if (nhe3 > 0) chan(215) = chan(215) + dble(nhe3)
+        if (npimin > 0) chan(216) = chan(216) + dble(npimin)
+        if (npizer > 0) chan(217) = chan(217) + dble(npizer)
+        if (npiplu > 0) chan(218) = chan(218) + dble(npiplu)
+        ic = 0
+        if (nn == 1) then
+!    This is (1n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 1
+!    This is (np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 26
+!    This is (n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 45
+!    This is (n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 63
+!    This is (n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 80
+!    This is (n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 96 
+!    This is (nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 112
+!    This is (npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 132
+!    This is (n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 147
+!    This is (nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 162
+!    This is (npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 179
+!    This is (n2He4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 2) ic = 176
+        elseif (nn == 2) then
+!    This is (2n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 2
+!    This is (2np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 27
+!    This is (2n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 46
+!    This is (2n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 64
+!    This is (2n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 81 
+!    This is (2n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 97 
+!    This is (2nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 113
+!    This is (2npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 133
+!    This is (2n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 148
+!    This is (2nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 163
+!    This is (2npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 180
+!    This is (2n2He4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 2) ic = 177
+        elseif (nn == 3) then
+!    This is (3n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 3
+!    This is (3np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 28
+!    This is (3n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 47
+!    This is (3n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 65
+!    This is (3n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 82
+!    This is (3n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 98
+!    This is (3nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 114
+!    This is (3npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 134
+!    This is (3n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 149
+!    This is (3nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 164
+!    This is (3npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 181
+        elseif (nn == 4) then
+!    This is (4n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 4
+!    This is (4np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 29
+!    This is (4n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 48
+!    This is (4n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 66
+!    This is (4n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 83 
+!    This is (4n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 99 
+!    This is (4nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 115
+!    This is (4npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 135
+!    This is (4n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 150
+!    This is (4nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 165
+!    This is (4npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 182
+        elseif (nn == 5) then
+!    This is (5n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 5
+!    This is (5np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 30
+!    This is (5n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 49
+!    This is (5n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 67
+!    This is (5n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 84
+!    This is (5n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 100
+!    This is (5nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 116
+!    This is (5npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 136
+!    This is (5n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 151
+!    This is (5nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 166
+!    This is (5npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 183
+       elseif (nn == 6) then
+!    This is (6n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 6
+!    This is (6np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 31
+!    This is (6n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 50
+!    This is (6n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 68
+!    This is (6n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 85 
+!    This is (6n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 101 
+!    This is (6nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 117
+!    This is (6npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 137
+!    This is (6n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 152
+!    This is (6nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 167
+!    This is (6npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 184
+       elseif (nn == 7) then
+!    This is (7n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 7
+!    This is (7np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 32
+!    This is (7n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 51
+!    This is (7n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 69
+!    This is (7n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 86 
+!    This is (7n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 102 
+!    This is (7nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 118
+!    This is (7npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 138
+!    This is (7n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 153
+!    This is (7nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 168
+!    This is (7npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 185
+        elseif (nn == 8) then
+!    This is (8n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 8
+!    This is (8np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 33
+!    This is (8n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 52
+!    This is (8n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 70
+!    This is (8n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 87
+!    This is (8n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 103
+!    This is (8nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 119
+!    This is (8npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 139
+!    This is (8n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 154
+!    This is (8nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 169
+!    This is (8npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 186
+        elseif (nn == 9) then
+!    This is (9n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 9
+!    This is (9np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 34
+!    This is (9n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 53
+!    This is (9n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 71
+!    This is (9n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 88
+!    This is (9n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 104
+!    This is (9nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 120
+!    This is (9npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 140
+!    This is (9n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 155
+!    This is (9nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 170
+!    This is (9npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 187
+        elseif (nn == 10) then
+!    This is (10n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 10
+!    This is (10np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 35
+!    This is (10n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 54
+!    This is (10n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 72
+!    This is (10n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 89
+!    This is (10n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 105
+!    This is (10nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 121
+!    This is (10npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 141
+!    This is (10n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 156
+!    This is (10nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 171
+!    This is (10npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 188
+        elseif (nn == 11) then
+!    This is (11n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 11
+!    This is (11np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 36
+!    This is (11n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 55
+!    This is (11n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 73
+!    This is (11n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 90
+!    This is (11n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 106
+!    This is (11nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 122
+!    This is (11npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 142
+!    This is (11n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 157
+!    This is (11nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 172
+!    This is (11npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 189
+        elseif (nn == 12) then
+!    This is (12n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 12
+!    This is (12np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 37
+!    This is (12n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 56
+!    This is (12n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 74
+!    This is (12n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 91
+!    This is (12n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 107
+!    This is (12nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 123
+!    This is (12npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 143
+!    This is (12n2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 158
+!    This is (12nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 173
+!    This is (12npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 190
+        elseif (nn == 13) then
+!    This is (13n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 13
+!    This is (13np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 38
+!    This is (13n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 57
+!    This is (13n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 75
+!    This is (13n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 92
+!    This is (13n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 108
+!    This is (13nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 124
+!    This is (13npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 144
+!    This is (13nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 174
+!    This is (13npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 191
+        elseif (nn == 14) then
+!    This is (14n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 14
+!    This is (14np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 39
+!    This is (14n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 58
+!    This is (14n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 76
+!    This is (14n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 93
+!    This is (14n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 109
+!    This is (14nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 125
+!    This is (14npd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 145
+!    This is (14nHe4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 175
+!    This is (14npHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 192
+        elseif (nn == 15) then
+!    This is (15n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 15
+!    This is (15np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 40
+!    This is (15n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 59
+!    This is (15n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 77
+!    This is (15n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 94
+!    This is (15n5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 110
+!    This is (15nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 126
+        elseif (nn == 16) then
+!    This is (16n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 16
+!    This is (16np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 41
+!    This is (16n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 60
+!    This is (16n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 78
+!    This is (16n4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 95
+!    This is (16nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 127
+        elseif (nn == 17) then
+!    This is (17n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 17
+!    This is (17np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 42
+!    This is (17n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 61
+!    This is (17n3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 79
+!    This is (17nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 128
+        elseif (nn == 18) then
+!    This is (18n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 18
+!    This is (18np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 43
+!    This is (18n2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 62
+!    This is (18nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 129
+        elseif (nn == 19) then
+!    This is (19n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 19
+!    This is (19np) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 44
+!    This is (19nd) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 130
+        elseif (nn == 20) then
+!    This is (20n) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 20
+        elseif (nn == 0) then
+!    This is (1p) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 21
+!    This is (2p) channel:
+          if (np == 2 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 22
+!    This is (3p) channel:
+          if (np == 3 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 23
+!    This is (4p) channel:
+          if (np == 4 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 24
+!    This is (5p) channel:
+          if (np == 5 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 25
+!    This is (d) channel:
+          if (np == 0 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 111
+!    This is (pd) channel:
+          if (np == 1 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 131
+!    This is (2pd) channel:
+          if (np == 2 .and. nd == 1 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 0) ic = 146
+!    This is (He4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 159
+!    This is (2He4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 2) ic = 160
+!    This is (3He4) channel:
+          if (np == 0 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 3) ic = 161
+!    This is (pHe4) channel:
+          if (np == 1 .and. nd == 0 .and. nt == 0 .and. nhe3 == 0	&
+                .and. nhe4 == 1) ic = 178
+        endif
+        icp = 0
+        if (nt == 0 .and. nhe3 == 0) then
+          if (nd == 0 .and. nhe4 == 0) then
+            if (nn == 0) then
+!    This is (Xp) channel:
+              if (np > 0) icp = 194
+            elseif (nn > 0) then
+!    This is (Xn) channel:
+              if (np == 0) icp = 193
+!    This is (Xn+Yp) channel:
+              if (np > 0) icp = 195
+            endif
+          elseif (np == 0 .and. nn > 0) then
+!    This is (Xn+d) channel:
+            if (nd == 1 .and. nhe4 == 0) icp = 196
+!    This is (Xn+2d) channel:
+            if (nd == 2 .and. nhe4 == 0) icp = 197
+!    This is (Xn+He4) channel:
+            if (nd == 0 .and. nhe4 == 1) icp = 208
+!    This is (Xn+2He4) channel:
+            if (nd == 0 .and. nhe4 == 2) icp = 209
+          elseif (nhe4 == 0 .and. nn > 0) then
+!    This is (Xn+p+d) channel:
+            if (nd == 1 .and. np == 1) icp = 198
+!    This is (Xn+2p+d) channel:
+            if (nd == 1 .and. np == 2) icp = 199
+!    This is (Xn+p+2d) channel:
+            if (nd == 2 .and. np == 1) icp = 200
+!    This is (Xn+2p+2d) channel:
+            if (nd == 2 .and. np == 2) icp = 201
+          elseif (nd == 0 .and. nn > 0) then
+!    This is (Xn+p+He4) channel:
+            if (np == 1 .and. nhe4 == 1) icp = 210
+!    This is (Xn+2p+He4) channel:
+            if (np == 2 .and. nhe4 == 1) icp = 211
+!    This is (Xn+3p+He4) channel:
+            if (np == 3 .and. nhe4 == 1) icp = 212
+          elseif (nd == 1 .and. nn > 0) then
+!    This is (Xn+d+He4) channel:
+            if (nhe4 == 1 .and. np == 0) icp = 213
+          endif
+        elseif (nt > 0 .and. nhe3 == 0) then
+!    This is (Xn+t) channel:
+          if (np == 0 .and. nn > 0 .and. nd == 0 .and. nhe4 == 0	&
+    .and. nt == 1) icp = 202
+!    This is (Xn+2t) channel:
+          if (np == 0 .and. nn > 0 .and. nd == 0 .and. nhe4 == 0	&
+    .and. nt == 2) icp = 203
+!    This is (Xn+p+t) channel:
+          if (np == 1 .and. nn > 0 .and. nd == 0 .and. nhe4 == 0	&
+    .and. nt == 1) icp = 204
+!    This is (Xn+2p+t) channel:
+          if (np == 2 .and. nn > 0 .and. nd == 0 .and. nhe4 == 0	&
+    .and. nt == 1) icp = 205
+!    This is (Xn+d+t) channel:
+          if (np == 0 .and. nn > 0 .and. nd == 1 .and. nhe4 == 0	&
+    .and. nt == 1) icp = 206
+!    This is (Xn+p+d+t) channel:
+          if (np == 1 .and. nn > 0 .and. nd == 1 .and. nhe4 == 0	&
+    .and. nt == 1) icp = 207
+        endif
+        if (ic.ne.0) chan(ic) = chan(ic) + one
+        if (icp > 0) chan(icp) = chan(icp) + one
+      endif
+   50 continue
+      if (misy == 3) then 
+!   KKG  12/02/04   Accumulate residual nuclei information:
+        call resdist (zbeg, abeg, fisevent)  
+!      Accumulate distribution of fission-fragment opening angles:
+        call opandis (fisevent, nn) 
+!      Accumulate distribution of neutron multiplicities:
+        call disnmul (fisevent, nn, nnc, nnp, nne, nnprf, nnpof)
+      endif   
+      return
+  
+! ======================================================================
+ 
+ 1000 format (1x,'In VLOBD, Particle # ',i4,' has an energy outside ',	&
+       'the range for the spectrum; spt & parz ='/5f10.6/	&
+        4f10.6,f10.2,f10.6)
+ 1100 format (1x,'In VLOBD, for event # ',i8,', nonconservation of ',	&
+        'Z = ',f5.1,' and/or A = ',f5.1,' !')
+       
+! ======================================================================
+      end
+      
+      subroutine resdist (zbeg, abeg, fisevent)
+
+! ======================================================================
+!
+!   Accumulate the distribution of residual nuclides in the appropriate
+!   arrays for:
+!      rdis(1,.,.):  after the cascade;
+!      rdis(2,.,.):  after preeq. decay;  (= sum of (3,..) and (4,..))
+!      rdis(3,.,.):  nuclei before evaporation which will not fission;
+!      rdis(4,.,.):  nuclei before evaporation which will fission;
+!      rdis(5,.,.):  nuclei just before fissioning.
+!
+!      rdis(.,1,.):  A distribution;
+!      rdis(.,2,.):  Z distribution;
+!      rdis(.,3,.):  E* distribution;
+!      rdis(.,4,.):  |P| distribution;
+!      rdis(.,5,.):  L distribution.
+! 
+!   Written by K. K. Gudima, December, 2004.
+!   Edited by A. J. Sierk, LANL T-16, January, 2005.
+!   Edited by AJS, LANL T-2, December, 2011.
+!   Edited by LMK, XCP-3, July 2013 (included error protection)
+!
+! ======================================================================
+
+      implicit real*8 (a-h, o-z)
+      integer*4 ia, iam, iex, ipm, iz
+
+      logical  fisevent
+
+      real*8 temp
+
+! ======================================================================
+
+      common /residf/ atf, ztf, exf, pmf  
+      common /resid0/ at0(2), zt0(2), ex0(2), pm0(2), am0(2)
+      common /resdis/ rdis(5,5,250), dex, dpm
+
+      data one /1.d0/
+
+! ======================================================================
+!  KKG  12/02/04
+!   Accumulate residual nuclei information:
+
+!   Nuclei after cascade:
+      da = abeg - at0(1)
+      dz = zbeg - zt0(1)
+      ia = nint(da) + 1
+      ia = min(nint(abeg), ia)
+      ia = min(ia, 247)
+      iz = nint(dz) + 1
+      iz = min(nint(zbeg) + 1, iz)
+      iz = min(iz, 247)
+      if (dex < 1.0d-12 .and. dex > -1.0d-12) then
+	dex = 1.0d-12
+	print *, 'Divide by zero error in vlobd.f90 line 1199,1245,1352'
+      end if
+      iex = int(ex0(1)/dex) + 1
+      if (dpm < 1.0d-12 .and. dpm > -1.0d-12) then
+	dpm = 1.0d-12
+	print *, 'Divide by zero error in vlobd.f90 line 1204,1246,1353'
+      end if
+      ipm = int(pm0(1)/dpm) + 1
+      iam = int(am0(1))     + 1
+      if (ia <= 247) then
+        rdis(1,1,ia) = rdis(1,1,ia)  + one
+        rdis(1,1,248)= rdis(1,1,248) + at0(1)
+        rdis(1,1,249)= rdis(1,1,249) + at0(1)**2
+        rdis(1,1,250)= rdis(1,1,250) + one
+      endif
+      if (iz <= 247) then
+        rdis(1,2,iz) = rdis(1,2,iz)  + one
+        rdis(1,2,248)= rdis(1,2,248) + zt0(1)
+        rdis(1,2,249)= rdis(1,2,249) + zt0(1)**2
+        rdis(1,2,250)= rdis(1,2,250) + one
+      endif
+      if (iex > 0 .and. iex <= 247) then
+        rdis(1,3,iex) = rdis(1,3,iex) + one
+        rdis(1,3,248) = rdis(1,3,248) + ex0(1)
+        rdis(1,3,249) = rdis(1,3,249) + ex0(1)**2
+        rdis(1,3,250) = rdis(1,3,250) + one
+      endif
+      if (ipm > 0 .and. ipm <= 247) then
+        rdis(1,4,ipm) = rdis(1,4,ipm) + one
+        rdis(1,4,248) = rdis(1,4,248) + pm0(1)
+        rdis(1,4,249) = rdis(1,4,249) + pm0(1)**2
+        rdis(1,4,250) = rdis(1,4,250) + one
+      endif
+      if (iam > 0 .and. iam <= 247) then
+        rdis(1,5,iam) = rdis(1,5,iam) + one
+        rdis(1,5,248) = rdis(1,5,248) + am0(1)
+        rdis(1,5,249) = rdis(1,5,249) + am0(1)**2
+        rdis(1,5,250) = rdis(1,5,250) + one
+      endif
+!   Nuclei after preequilibrium:
+      da = abeg - at0(2)
+      dz = zbeg - zt0(2)
+      ia = nint(da) + 1
+      ia = min(nint(abeg), ia)
+      ia = min(ia, 247)
+      iz = nint(dz) + 1
+      iz = min(nint(zbeg) + 1, iz)
+      iz = min(iz, 247)
+      iex = int(ex0(2)/dex) + 1
+      ipm = int(pm0(2)/dpm) + 1
+      iam = int(am0(2))     + 1
+      if (ia <= 247) then
+        rdis(2,1,ia) = rdis(2,1,ia)  + one
+        rdis(2,1,248)= rdis(2,1,248) + at0(2)
+        rdis(2,1,249)= rdis(2,1,249) + at0(2)**2
+        rdis(2,1,250)= rdis(2,1,250) + one
+      endif
+      if (iz <= 247) then
+        rdis(2,2,iz) = rdis(2,2,iz)  + one
+        rdis(2,2,248)= rdis(2,2,248) + zt0(2)
+        rdis(2,2,249)= rdis(2,2,249) + zt0(2)**2
+        rdis(2,2,250)= rdis(2,2,250) + one
+      endif
+      if (iex > 0 .and. iex <= 247) then
+        rdis(2,3,iex) = rdis(2,3,iex) + one
+        rdis(2,3,248) = rdis(2,3,248) + ex0(2)
+        rdis(2,3,249) = rdis(2,3,249) + ex0(2)**2
+        rdis(2,3,250) = rdis(2,3,250) + one
+      endif
+      if (ipm > 0 .and. ipm <= 247) then
+        rdis(2,4,ipm) = rdis(2,4,ipm) + one
+        rdis(2,4,248) = rdis(2,4,248) + pm0(2)
+        rdis(2,4,249) = rdis(2,4,249) + pm0(2)**2
+        rdis(2,4,250) = rdis(2,4,250) + one
+      endif
+      if (iam > 0 .and. iam <= 247) then
+        rdis(2,5,iam) = rdis(2,5,iam) + one
+        rdis(2,5,248) = rdis(2,5,248) + am0(2)
+        rdis(2,5,249) = rdis(2,5,249) + am0(2)**2
+        rdis(2,5,250) = rdis(2,5,250) + one
+      endif
+      if (.not. fisevent) then
+!   Nuclei after preeq. which will NOT fission:
+        if (ia <= 247) then
+          rdis(3,1,ia) = rdis(3,1,ia)  + one
+          rdis(3,1,248)= rdis(3,1,248) + at0(2)
+          rdis(3,1,249)= rdis(3,1,249) + at0(2)**2
+          rdis(3,1,250)= rdis(3,1,250) + one
+        endif
+        if (iz <= 247) then
+          rdis(3,2,iz) = rdis(3,2,iz)  + one
+          rdis(3,2,248)= rdis(3,2,248) + zt0(2)
+          rdis(3,2,249)= rdis(3,2,249) + zt0(2)**2
+          rdis(3,2,250)= rdis(3,2,250) + one
+        endif
+        if (iex > 0 .and. iex <= 247) then
+          rdis(3,3,iex) = rdis(3,3,iex) + one
+          rdis(3,3,248) = rdis(3,3,248) + ex0(2)
+          rdis(3,3,249) = rdis(3,3,249) + ex0(2)**2
+          rdis(3,3,250) = rdis(3,3,250) + one
+        endif
+        if (ipm > 0 .and. ipm <= 247) then
+          rdis(3,4,ipm) = rdis(3,4,ipm) + one
+          rdis(3,4,248) = rdis(3,4,248) + pm0(2)
+          rdis(3,4,249) = rdis(3,4,249) + pm0(2)**2
+          rdis(3,4,250) = rdis(3,4,250) + one
+        endif
+        if (iam > 0 .and. iam <= 247) then
+          rdis(3,5,iam) = rdis(3,5,iam) + one
+          rdis(3,5,248) = rdis(3,5,248) + am0(2)
+          rdis(3,5,249) = rdis(3,5,249) + am0(2)**2
+          rdis(3,5,250) = rdis(3,5,250) + one
+        endif
+      else 
+!   Nuclei after preeq. which will fission:
+        if (ia <= 247) then
+          rdis(4,1,ia) = rdis(4,1,ia)  + one
+          rdis(4,1,248)= rdis(4,1,248) + at0(2)
+          rdis(4,1,249)= rdis(4,1,249) + at0(2)**2
+          rdis(4,1,250)= rdis(4,1,250) + one
+        endif
+        if (iz <= 247) then
+          rdis(4,2,iz) = rdis(4,2,iz)  + one
+          rdis(4,2,248)= rdis(4,2,248) + zt0(2)
+          rdis(4,2,249)= rdis(4,2,249) + zt0(2)**2
+          rdis(4,2,250)= rdis(4,2,250) + one
+        endif
+        if (iex > 0 .and. iex <= 247) then
+          rdis(4,3,iex) = rdis(4,3,iex) + one
+          rdis(4,3,248) = rdis(4,3,248) + ex0(2)
+          rdis(4,3,249) = rdis(4,3,249) + ex0(2)**2
+          rdis(4,3,250) = rdis(4,3,250) + one
+        endif
+        if (ipm > 0 .and. ipm <= 247) then
+          rdis(4,4,ipm) = rdis(4,4,ipm) + one
+          rdis(4,4,248) = rdis(4,4,248) + pm0(2)
+          rdis(4,4,249) = rdis(4,4,249) + pm0(2)**2
+          rdis(4,4,250) = rdis(4,4,250) + one
+        endif
+         if (iam > 0 .and. iam <= 247) then
+          rdis(4,5,iam) = rdis(4,5,iam) + one
+          rdis(4,5,248) = rdis(4,5,248) + am0(2)
+          rdis(4,5,249) = rdis(4,5,249) + am0(2)**2
+          rdis(4,5,250) = rdis(4,5,250) + one
+        endif
+!  Distributions of nuclei just before they fission;
+!  NOTE: in GEM2 angular momentum is not changed!
+        da = abeg - atf
+        dz = zbeg - ztf
+        ia = nint(da) + 1
+        ia = min(nint(abeg), ia)
+        ia = min(ia, 247)
+        iz = nint(dz) + 1
+        iz = min(nint(zbeg) + 1, iz)
+        iz = min(iz, 247)
+        iex = int(exf/dex) + 1
+        ipm = int(pmf/dpm) + 1
+        iam = int(am0(2))  + 1
+        if (ia <= 247) then
+          rdis(5,1,ia) = rdis(5,1,ia)  + one
+          rdis(5,1,248)= rdis(5,1,248) + atf
+          rdis(5,1,249)= rdis(5,1,249) + atf**2
+          rdis(5,1,250)= rdis(5,1,250) + one
+        endif
+        if (iz <= 247) then
+          rdis(5,2,iz) = rdis(5,2,iz)  + one
+          rdis(5,2,248)= rdis(5,2,248) + ztf
+          rdis(5,2,249)= rdis(5,2,249) + ztf
+          rdis(5,2,250)= rdis(5,2,250) + one
+        endif
+        if (iex > 0 .and. iex <= 247) then
+          rdis(5,3,iex) = rdis(5,3,iex) + one
+          rdis(5,3,248) = rdis(5,3,248) + exf
+          rdis(5,3,249) = rdis(5,3,249) + exf**2
+          rdis(5,3,250) = rdis(5,3,250) + one
+        endif
+        if (ipm > 0 .and. ipm <= 247) then
+          rdis(5,4,ipm) = rdis(5,4,ipm) + one
+          rdis(5,4,248) = rdis(5,4,248) + pmf
+          rdis(5,4,249) = rdis(5,4,249) + pmf**2
+          rdis(5,4,250) = rdis(5,4,250) + one
+        endif
+        if (iam > 0 .and. iam <= 247) then
+          rdis(5,5,iam) = rdis(5,5,iam) + one
+          rdis(5,5,248) = rdis(5,5,248) + am0(2)
+          rdis(5,5,249) = rdis(5,5,249) + am0(2)**2
+          rdis(5,5,250) = rdis(5,5,250) + one
+        endif
+      endif
+      return       
+
+! ======================================================================
+      end
+      
+      subroutine opandis (fisevent, nn)       
+
+! ======================================================================
+!
+!      Accumulate distribution of fission fragments' opening angles.
+!      nn is total number of produced neutrons.
+!      bf12 contains the fragment velocity vectors.
+!
+!   Written by K. K. Gudima, December, 2004.
+!   Edited by A. J. Sierk, LANL T-16, January, 2005.
+!   Converted to separate SR by A. J. Sierk, LANL T-16, March, 2006.
+!   Edited by LMK, XCP-3, July 2013 (included error protection)
+!
+! ======================================================================
+
+      implicit real*8 (a-h, o-z)
+      integer*4 ifiss, it12, jk, nn
+
+      logical fisevent
+
+      real*8 temp
+
+! ======================================================================
+
+      common /fisopa/ opan(7,185), dth12
+      common /ifissc/ af12(2), zf12(2), tf12(2), ex12(2), bf12(2,3), 	&
+                ifiss
+      common /degrad/ degrad
+
+      data one /1.d0/
+
+! ======================================================================
+
+      if (.not.fisevent) return
+      b1 = sqrt(bf12(1,1)**2 + bf12(1,2)**2 + bf12(1,3)**2) 
+      b2 = sqrt(bf12(2,1)**2 + bf12(2,2)**2 + bf12(2,3)**2) 
+      temp = b1*b2
+      if (temp < 1.0d-12 .and. temp > -1.0d-12) then
+	temp = 1.0d-12
+	print *, 'Divide by zero error in vlobd.f90 line 1430'
+      end if
+      ct12 = (bf12(1,1)*bf12(2,1) + bf12(1,2)*bf12(2,2) +	&
+        bf12(1,3)*bf12(2,3))/(temp)
+      st12 = sqrt(abs(one - ct12**2))
+      t12 = atan2(st12,ct12)*degrad
+      if (dth12 < 1.0d-12 .and. dth12 > -1.0d-12) then
+	dth12 = 1.0d-12
+	print *, 'Divide by zero error in vlobd.f90 line 1440'
+      end if
+      it12 = int(t12/dth12) + 1
+      opan(1,it12) = opan(1,it12) + one
+      opan(1,183)  = opan(1,183)  + t12
+      opan(1,184)  = opan(1,184)  + t12*t12
+      opan(1,185)  = opan(1,185)  + one
+      if (nn <= 5) then
+!   n multiplictiy 0-5
+        jk = 2
+      elseif (nn <= 8) then
+!   n multiplictiy 6-8
+        jk = 3
+      elseif (nn <= 12) then
+!   n multiplictiy 9-12
+        jk = 4
+      elseif (nn <= 15) then
+!   n multiplictiy 13-15
+        jk = 5
+      elseif (nn <= 19) then
+!   n multiplictiy 16-19
+        jk = 6
+      elseif (nn >= 20) then
+!   n multiplicity 20-.....
+        jk = 7
+      endif
+      opan(jk,it12) = opan(jk,it12) + one
+      opan(jk,183)  = opan(jk,183)  + t12
+      opan(jk,184)  = opan(jk,184)  + t12*t12
+      opan(jk,185)  = opan(jk,185)  + one
+      return 
+
+! ======================================================================
+      end      
+
+      subroutine  disnmul (fisevent, nn, nnc, nnp, nne, nnprf, nnpof)
+
+! ======================================================================
+!
+!   This subroutine accumulates the distributions of the multiplicities 
+!   of neutrons:
+!
+!     nn   -  total number of neutrons produced in this event;
+!     nnc  -  number of neutrons produced in the cascade stage;
+!     nnp  -  number of neutrons produced in the preequilibrium stage;
+!     nne  -  number of neutrons produced in evaporation (no fission);
+!     nnprf-  number of prefission neutrons produced in evaporation;
+!     nnpof-  number of postfission neutrons produced in evaporation
+!             from fission fragments.
+!
+!   Written by K. K. Gudima, December, 2004.
+!   Edited by A. J. Sierk, LANL T-16, January, 2005.
+!   Edited by AJS, LANL T-2, December, 2011.
+!
+! ======================================================================
+
+      implicit real*8 (a-h, o-z)
+      integer*4 k, n, nn, nnc, nne, nnp, nnpof, nnprf
+      logical fisevent
+
+! ======================================================================
+
+      dimension n(6)
+
+      common /disnmu/ disnm(6,155)
+
+      data one /1.d0/
+
+! ======================================================================
+
+      n(1) = nn
+      n(2) = nnc
+      n(3) = nnp
+      n(4) = nne
+      n(5) = nnprf
+      n(6) = nnpof
+        do k=1,6
+        if ((k <= 3) .or. (k == 4 .and. .not.fisevent) .or.	&
+                    (k >= 5 .and. fisevent)) then
+          if (n(k) >= 0 .and. n(k) <= 151) then
+            disnm(k,n(k)+1) = disnm(k,n(k)+1) + one
+            disnm(k,153)    = disnm(k,153) + dble(n(k))  
+            disnm(k,154)    = disnm(k,154) + dble(n(k)*n(k))  
+            disnm(k,155)    = disnm(k,155) + one  
+          endif
+        endif
+        enddo     
+      return 
+
+! ======================================================================
+      end  

@@ -1,0 +1,39 @@
+# This file contains a list of "things" for git to ignore
+
+# Aux. files (from editors)
+# =========================
+*~
+*.swp
+*#*
+
+
+# Directories:
+# =========================
+build/
+my_*/
+Docs/Docs_*
+
+
+# Regression tests (only necessary directories):
+# =========================
+# test/regression/inputs/
+# test/regression/bin/
+test/regression/results*
+test/regression/differences/
+test/regression/compare/
+
+
+# Object files:
+# =========================
+*.o
+*.mod
+*.smod
+xgsm*
+
+
+# Simulation files:
+# =========================
+*.inf
+*.aux
+*.res
+# *.out

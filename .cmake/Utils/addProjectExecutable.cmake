@@ -1,0 +1,38 @@
+# ============================================================================ #
+#
+# Adds an executable to the project in the /bin/ directory
+#
+# ============================================================================ #
+cmake_minimum_required (VERSION 3.8.0)
+include (Prepend)
+PreventInSourceBuild()
+
+macro(add_project_executable target sources dependencies)
+
+  # Inform user of configuration:
+  message(${envDEBUG}
+    "${Green}Configuring the ${target} executable...${ColorReset}")
+
+  # Add the exectable, link, and install it:
+  add_executable(${target} ${sources})
+
+  # If dependencies exist, add them:
+  if (dependencies)
+    target_link_libraries(${target} ${dependencies})
+  endif()
+
+  # Install the executable
+  install(TARGETS ${target}
+    CONFIGURATIONS ${SUPPORTED_CONFIGURATIONS}
+    COMPONENT "${target} (executible)"
+    RUNTIME DESTINATION "${CMAKE_BINARY_DIR}/bin"
+    LIBRARY DESTINATION "${CMAKE_BINARY_DIR}/lib"
+    ARCHIVE DESTINATION "${CMAKE_BINARY_DIR}/lib"
+    INCLUDES DESTINATION "${CMAKE_BINARY_DIR}/include"
+    ${ARGN}
+    )
+
+endmacro()
+
+# ============================================================================ #
+

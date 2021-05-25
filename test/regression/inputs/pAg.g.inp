@@ -1,0 +1,32 @@
+pAg.g.aux
+pAg.g.out
+prot
+     ZAID, prot - proton, neut - neutron, pipl - pi+, pimi - pi-, pize - pi0,
+     gamm - gamma with fixed energy, gamb - bremss. gamma, stop - no more calc.
+     480.00000
+107
+ 47
+500
+     -50.00000
+     576.00000
+ 5.00
+1
+1
+1
+1
+1
+1
+  1,   9
+      08      12      18      22      38      42      58      62      63      67      68      72      88      92     118     122     158     162      78      82
+        0.000       44.000        5.000       44.000      132.000       11.000      132.000      308.000       22.000      308.000      576.000       44.000
+ 66
+ 66
+  1
+   10.000   20.000   40.000   60.000   65.000   70.000   90.000  120.000  160.000   80.000    5.000
+1
+4
+  3
+Projectile A, Z:   1,   1   (prot)
+Target A, Z: 107,  47
+Energy (GeV/A), limc:   0.4800,  10000000
+stop
