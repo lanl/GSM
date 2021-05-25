@@ -13,27 +13,28 @@ module Types
 
   ! Import standard Fortran types used (int, float)
   use, intrinsic :: iso_fortran_env, only: &
-       f_int8             => int8, &
-       f_int16            => int16, &
-       f_int32            => int32, &
-       f_int64            => int64, &
-       f_float            => real32, &
-       f_double           => real64, &
-       f_long_double      => real128
+       fInt8             => int8, &
+       fInt16            => int16, &
+       fInt32            => int32, &
+       fInt64            => int64, &
+       fFloat            => real32, &
+       fDouble           => real64, &
+       fLongDouble       => real128
 
   ! Import standard C types used (int, float)
   use, intrinsic :: iso_c_binding, only: &
-       c_int8             => c_int8_t, &
-       c_int16            => c_int16_t, &
-       c_int32            => c_int32_t, &
-       c_int64            => c_int64_t, &
-       ! c_int128           => c_int128_t, &
-       c_float, &
-       c_double, &
-       c_long_double
-       ! , c_float128
+       cInt8             => c_int8_t, &
+       cInt16            => c_int16_t, &
+       cInt32            => c_int32_t, &
+       cInt64            => c_int64_t, &
+       ! cInt128           => c_int128_t, &
+       cFloat            => c_float, &
+       cDouble           => c_double, &
+       cLongDouble      => c_long_double
+  ! , cFloat128
 
   ! Import custom types that may be used
+  !> \todo Move these to a FileStream module
   use, intrinsic :: iso_fortran_env, only: &
        STAT_END           => iostat_end, &  ! Stream end
        STAT_EOR           => iostat_eor, &  ! Stream record end
@@ -55,13 +56,13 @@ module Types
   public
 
   ! GSM Types
-  integer(f_int8),       parameter :: gsm_int8 = f_int8
-  integer(f_int16),      parameter :: gsm_int16 = f_int16
-  integer(f_int32),      parameter :: gsm_int32 = f_int32
-  integer(f_int64),      parameter :: gsm_int64 = f_int64
-  real(f_float),         parameter :: gsm_float = f_float
-  real(f_double),        parameter :: gsm_double = f_double
-  real(f_long_double),   parameter :: gsm_long_double = f_long_double
+  integer(fInt8),       parameter :: gsmInt8         = fInt8
+  integer(fInt16),      parameter :: gsmInt16        = fInt16
+  integer(fInt32),      parameter :: gsmInt32        = fInt32
+  integer(fInt64),      parameter :: gsmInt64        = fInt64
+  integer(fFloat),      parameter :: gsmFloat        = fFloat
+  integer(fDouble),     parameter :: gsmDouble       = fDouble
+  integer(fLongDouble), parameter :: gsmLongDouble   = fLongDouble
 
 end module Types
 

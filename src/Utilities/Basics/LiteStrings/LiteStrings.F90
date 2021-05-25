@@ -11,8 +11,27 @@
 ! =============================================================================
 module LiteStrings
 
-    implicit none
-    private
+  use Types, only: gsmInt8, gsmInt16, gsmInt32, gsmInt64, &
+       & gsmFloat, gsmDouble, gsmLongDouble
+
+  implicit none
+  private
+
+  ! >>> PARAMETERIZED DEFAULTS
+#include "parameters.F90"
+
+  ! >>> INTERFACES
+#include "conversionInterface.F90"
+
+  ! >>> OBJECT CONSTRUCTION
+!#include "constructorInterface.F90"
+
+  ! >>> DATA OBJECTS
+!#include "liteString.F90"
+
+contains
+
+#include "conversionFunctions.F90"
 
 
 end module LiteStrings

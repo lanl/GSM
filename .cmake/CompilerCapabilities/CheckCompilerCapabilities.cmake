@@ -42,4 +42,10 @@ Check_Fortran_Source_Compile (
 )
 
 
+# Check_Fortran_Source_Compile (
+#   ${CMAKE_CURRENT_LIST_DIR}/supportForSelectType.F90
+#   SUPPORT_FOR_FORTRAN_SELECT_TYPE
+# )
+
+
 
