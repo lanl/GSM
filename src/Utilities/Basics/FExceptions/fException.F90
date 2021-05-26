@@ -41,7 +41,7 @@
   !> \brief Indicator of unreachable code being accessed
   type, public, extends(FException) :: UnReachable
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageUnReachable
   end type UnReachable
@@ -50,7 +50,7 @@
   !> \brief Indicates a procedure has not been implemented
   type, public, extends(FException) :: NotImplemented
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageUnImplemented
   end type NotImplemented
@@ -59,7 +59,7 @@
   !> \brief Indicates a bad allocation ocurred
   type, public, extends(FException) :: BadAllocation
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageBadAllocation
   end type BadAllocation
@@ -68,7 +68,7 @@
   !> \brief Indicates an underflow error occurred
   type, public, extends(FException) :: UnderFlowError
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageUnderFlow
   end type UnderFlowError
@@ -77,7 +77,7 @@
   !> \brief Indicates an overflow error occurred
   type, public, extends(FException) :: OverFlowError
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageOverFlow
   end type OverFlowError
@@ -86,16 +86,16 @@
   !> \brief Indicates a general logic exception occurred
   type, public, extends(FException) :: LogicError
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageLogicError
   end type LogicError
-
+  
 
   !> \brief Indicates an invalid argument was received
   type, public, extends(FException) :: InvalidArgument
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageInvalidArgument
   end type InvalidArgument
@@ -104,7 +104,7 @@
   !> \brief Indicates an Out of Range error occurred
   type, public, extends(FException) :: OutOfRange
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageOutOfRange
   end type OutOfRange
@@ -113,7 +113,7 @@
   !> \brief Indicates a general run time error occurred
   type, public, extends(FException) :: RunTimeError
      private
-  contains
+   contains
      private
      procedure :: buildMessage => buildMessageRunTime
   end type RunTimeError

@@ -34,6 +34,7 @@
 module Basics
 
     use Types
+    use FExceptions
   
   implicit none
   public

@@ -14,7 +14,7 @@
 
   !> \brief Text that is prepended to the Fortran Exception message
   character(*), private, parameter :: fmtFExcept = "Fortran Exception: "
-
+  
   !> \brief Format strings for each of the exception types
   character(*), private, parameter :: &
        & fmtGeneral        = fmtFExcept // "A general exception occurred: ", &

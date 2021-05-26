@@ -5,7 +5,7 @@
 !> \author CMJ
 !>
 ! =============================================================================
-  
+
   ! ===========================================================================
   ! Return file name the exception occurred on
   pure function location(this) result(str)
@@ -14,7 +14,7 @@
     character(:), allocatable :: str
     str = this%errorLocation
   end function location
-  
+
   ! ===========================================================================
   ! Return exception text
   pure function what(this) result(errText)
@@ -43,7 +43,7 @@
     else
        call this%buildMessage("")
     end if
-
+    
     ! Add the location to the message if desired
     if (includeLocation) then
        this%errorText = this%errorText // this%errorLocation

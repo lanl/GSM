@@ -26,7 +26,7 @@
     class(UnReachable), intent(inout) :: this
     character(*),       intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtUnReachable // errText
     
   end subroutine buildMessageUnReachable
   
@@ -38,7 +38,7 @@
     class(NotImplemented), intent(inout) :: this
     character(*),          intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtNotImplemented // errText
     
   end subroutine buildMessageUnImplemented
   
@@ -50,7 +50,7 @@
     class(BadAllocation), intent(inout) :: this
     character(*),         intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtBadAllocation // errText
     
   end subroutine buildMessageBadAllocation
   
@@ -62,7 +62,7 @@
     class(UnderFlowError), intent(inout) :: this
     character(*),          intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtUnderFlow // errText
     
   end subroutine buildMessageUnderFlow
   
@@ -74,7 +74,7 @@
     class(OverFlowError), intent(inout) :: this
     character(*),         intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtOverFlow // errText
     
   end subroutine buildMessageOverFlow
   
@@ -86,7 +86,7 @@
     class(LogicError), intent(inout) :: this
     character(*),      intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtLogicException // errText
     
   end subroutine buildMessageLogicError
   
@@ -98,7 +98,7 @@
     class(InvalidArgument), intent(inout) :: this
     character(*),           intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtInvalidArg // errText
     
   end subroutine buildMessageInvalidArgument
   
@@ -110,7 +110,7 @@
     class(OutOfRange), intent(inout) :: this
     character(*),      intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtOutofRange // errText
     
   end subroutine buildMessageOutOfRange
   
@@ -122,7 +122,7 @@
     class(RunTimeError), intent(inout) :: this
     character(*),        intent(in   ) :: errText
     
-    this%errorText = fmtGeneral // errText
+    this%errorText = fmtRunTime // errText
     
   end subroutine buildMessageRunTime
   
