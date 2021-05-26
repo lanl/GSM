@@ -13,7 +13,9 @@
 ! =============================================================================
 
 #include "Types.F90"
-#include "LiteStrings/LiteStrings.F90"
+#include "FExceptions/FExceptions.F90"
+! #include "LiteStrings/LiteStrings.F90"
+
 
 ! =============================================================================
 !>
