@@ -31,10 +31,9 @@ ___
 
 ## License <a name="license"></a>
 ___
-The predecessor of GSM, CEM, has been approved for release with associated LA-CC number LA-CC-04-085. The GSM event generator has **not** been licensed at this time for public release.
-The CEM material was procuded under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National Laboratory for the U.S. Department of Energy. The Government is granted for itself and others acting on its behalf a paid-up, nonexclusive, irrevocable worldwide license in this material to reproduce, prepare derivative works, and perform publicly and display publicly.  
+The predecessor of GSM, CEM, has been approved for release with associated LA-CC number LA-CC-04-085. The GSM event generator is licensed under an open-source BSD-3 license and copyrighted accordingly. Please see the [LICENSE](LICENSE) or [COPYRIGHT](COPYRIGHT) for details.
 
-**The GSM event generator code has not, at this time, been approved for public release under the CEM license.**  
+The CEM software, the predecessor to GSM, was produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National Laboratory for the U.S. Department of Energy. The Government is granted for itself and others acting on its behalf a paid-up, nonexclusive, irrevocable worldwide license in this material to reproduce, prepare derivative works, and perform publicly and display publicly. 
 
 
 ## Build Requirements <a name="build-requirements"></a>
@@ -152,13 +151,13 @@ Doing so generates, by default, documentation in both a `LaTeX` and `HTML` forma
 
 ## Contribute <a name="contribute"></a>
 ___
-Contributions to GSM can be made by contacting Dr. Leslie Kerby (kerblesl@isu.edu) at the Idaho State University or by contacting the [XCP-3](https://www.lanl.gov/org/padwp/adx/computational-physics/monte-carlo/index.php) group leader, currently Avneet Sood (sooda@lanl.gov), of the Los Alamos National Laboratory with information regarding the contribution.  
+Contributions to GSM can be made by contacting Chase Juneau (ChaseJuneau@isu.edu) or Dr. Leslie Kerby (LeslieKerby@isu.edu) at the Idaho State University, or by contacting the [XCP-3](https://www.lanl.gov/org/padwp/adx/computational-physics/monte-carlo/index.php) group leader of the Los Alamos National Laboratory with information regarding the contribution.  
 
->Tip: developers can obtain a general understanding of the code styling within GSM by looking through the [Coalescence model code](./src/Coalescence). This code represented there is sufficiently short and clear to provide beginning developers with style reference and the architecture utilized for the GSM code.  
+>Tip: developers can obtain a general understanding of the code styling within GSM by looking through the [Coalescence model code](./src/Coalescence). The code represented there is sufficiently short and clear to provide beginning developers with style reference and the architecture utilized for the GSM code.  
 
 Questions about GSM, regarding code or physics, can be directed to C. Juneau (junechas@isu.edu) and Dr. Leslie Kerby (kerblesl@isu.edu).
 
 
 ## Credits <a name="credits"></a>
 ___
-The primary authors of GSM, originally CEM, include Drs. S. Mashnik, K. Gudima, and A. Sierk, with important contributions from R. Prael, M. Baznat, and N. Mokhov. Upgrades made to CEM03.03 prior to GSM's creation can be mostly accredited to Dr. Leslie Kerby, who provided several important updates to the preequilibrium model of GSM. GSM was migrated to an object-oriented framework by C. Juneau under the auspices of the Idaho State University and, in part, from funding provided by the Los Alamos National Laboritory under Idaho State University subcontract number 385443.
+The primary authors of GSM, originally CEM, include Drs. S. Mashnik, K. Gudima, and A. Sierk, with important contributions from R. Prael, M. Baznat, and N. Mokhov. Upgrades made to CEM03.03 prior to GSM's creation can be primarily accredited to Dr. Leslie Kerby, who provided several important updates to the preequilibrium model of GSM. GSM was migrated to an object-oriented framework by C. Juneau under the auspices of the Idaho State University and, in part, from funding provided by the Los Alamos National Laboritory under Idaho State University subcontract number 385443. The GSM library has been made open-source as part of this work.
