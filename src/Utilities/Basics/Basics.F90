@@ -15,6 +15,7 @@
 #include "Types.F90"
 #include "FExceptions/FExceptions.F90"
 ! #include "LiteStrings/LiteStrings.F90"
+! #include "Testing/Testing.F90"
 
 
 ! =============================================================================
@@ -35,6 +36,7 @@ module Basics
 
     use Types
     use FExceptions
+    ! use Testing
   
   implicit none
   public

@@ -46,7 +46,7 @@
     
     ! Add the location to the message if desired
     if (includeLocation) then
-       this%errorText = this%errorText // this%errorLocation
+       this%errorText = this%errorText // this%location()
     end if
     
     ! Now "throw" the error

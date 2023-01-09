@@ -24,15 +24,18 @@ module LiteStrings
 #include "conversionInterface.F90"
 
   ! >>> OBJECT CONSTRUCTION
-!#include "constructorInterface.F90"
+#include "constructorInterface.F90"
 
   ! >>> DATA OBJECTS
-!#include "liteString.F90"
+#include "liteString.F90"
 
 contains
 
 #include "conversionFunctions.F90"
 
+#include "constructors.F90"
+
+#include "stringProcedures.F90"
 
 end module LiteStrings
 
