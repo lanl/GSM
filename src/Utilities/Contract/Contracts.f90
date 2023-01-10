@@ -34,9 +34,9 @@ module Contracts
 #endif
 
 ! Define the various macros
-#include "Insist.f90"
-#include "Validate.f90"
-#include "Require.f90"
+!#include "Insist.f90"
+!#include "Validate.f90"
+!#include "Require.f90"
 !#include "Check.f90"
 !#include "Ensure.f90"
 !#include "Remember.f90"
