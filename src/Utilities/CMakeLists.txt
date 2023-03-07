@@ -14,4 +14,7 @@ add_subdirectories(
   Attributes
   )
 
+set(dependencies
+  Core
+  )
 

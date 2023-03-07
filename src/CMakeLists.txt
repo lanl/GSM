@@ -8,6 +8,7 @@ PreventInSourceBuild()
 
 # General Fortran objects used:
 add_subdirectories(
+  Core
   Utilities
   RandomMC
   )
@@ -15,7 +16,6 @@ add_subdirectories(
 
 # Primary physics:
 add_subdirectories(
-  General
   PhotonEventGenerator
   Molnix
   FissionBarrier
