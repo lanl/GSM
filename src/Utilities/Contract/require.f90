@@ -14,7 +14,7 @@ subroutine require(cond)
    if (.not.(cond)) then
       print *, &
            & 'Pre-condition check failed in ', &
-	   & __FILE__, ', line ', __LINE__
+           & __FILE__, ', line ', __LINE__
       error stop 'Program execution halted.';
    end if
 

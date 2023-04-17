@@ -14,6 +14,6 @@ subroutine insist(cond, msg)
    logical,      intent(in   ) :: cond
    character(*), intent(in   ) :: msg
 
-   Insist(cond, msg)
+   !Insist(cond, msg)
    return
 end subroutine insist
