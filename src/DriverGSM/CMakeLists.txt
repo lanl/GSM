@@ -19,7 +19,7 @@ set(sources
 # List the sub-model's dependencies
 set(dependencies
   Parallel
-  gsmMain
+  GSM
   )
 
 # ============================================================================ #
