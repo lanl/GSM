@@ -1,45 +1,43 @@
 
 ! ==============================================================================
 !
-! Specifies the data type 'EventData'
+! Module file for non-particle event specific data
 !
 !
 ! Written by CMJ, XCP-3, 11/2019
 !
 ! ==============================================================================
+module EventDataMod
 
-  ! Tracks event-specific data for output files
-  type, public :: EventData
-     private
+  use, intrinsic:: iso_fortran_env, only: int32, int64, real64
+  use EvaporationClass, only: EvapCompound => residual, FissionFragment
+  use PreeqResiduals, only: PreeqResidual
 
-     ! From the /dele/ block
-     real(real64), public :: &
-          & wf     =  0.0_real64, &   ! Fission probability
-          & fusion = -1.0_real64      ! Flags fission (1), not (0)
+  implicit none
+  private
 
-     !> \brief Residual prior to/post Preequilibrium
-     !> NOTE: Data from the /resid0/ block
-     type(PreeqResidual), public, dimension(2):: residual
+  ! General constructors
+  public :: newEventData
+  interface newEventData
+     module procedure constructorMain
+  end interface newEventData
 
-     !> \brief Compound nuclues from Evaporation process
-     !> NOTE: Data from the /residf/ block
-     type(EvapCompound), public:: compound
+  ! Load EventData data type
+  include "eventData.f90"
 
-     !> \brief Flags if fission occurred (Flagged also in \c fissFrag below
-     integer(int32), public:: ifiss = 0_int32
+contains
 
-     !> \brief Fission fragments from Evaporation physics
-     !> NOTE: Data from the /ifissc/ block
-     type(FissionFragment), public, dimension(2):: fissFrag
+  ! Load constructors
+  include "constructors.f90"
 
-   contains
-     private
+  ! Load getters
+  ! include "getters.f90"
 
-     ! Getters
+  ! Load setters
+  ! include "setters.f90"
 
-     ! Setters
+  ! Object introspection
+  ! include "introspection.f90"
 
-     ! Introspection
-
-  end type EventData
+end module EventDataMod
 

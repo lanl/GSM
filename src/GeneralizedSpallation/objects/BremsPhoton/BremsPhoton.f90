@@ -1,48 +1,41 @@
 
 ! ==============================================================================
 !
-! Specifies the data type 'BremsPhoton'
+! Specifies data for a brems. photon particle
 !
 !
 ! Written by CMJ, XCP-3, 11/2019
 !
 ! ==============================================================================
+module BremsPhotonMod
 
-  ! Tracks event-specific data for output files
-  type, public :: BremsPhoton
-     private
-     
-     real(real64), public:: &
-          & tgmin   = 0.0_real64, &  ! Min KE
-          & tgmax   = 0.0_real64, &  ! Max KE
-          & tEquiv  = 0.0_real64, &  ! Equivalent T (for a set of events)
-          & absSX   = 0.0_real64     ! Absolute scattering cross section (for a set of events)
+  use, intrinsic:: iso_fortran_env, only: real64
 
-   contains
-     private
+  implicit none
+  private
 
-     ! Getters
-     procedure, public  :: getTMin
-     procedure, public  :: getTMax
-     procedure, public  :: getTEqv
-     procedure, public  :: getSXAbs
-     generic,   public  :: tMin  => getTMin
-     generic,   public  :: tMax  => getTMax
-     generic,   public  :: TEqv  => getTEqv
-     generic,   public  :: sxabs => getSXAbs
+  ! General constructors
+  public :: newBremsPhoton
+  interface newBremsPhoton
+     module procedure constructorMain
+  end interface newBremsPhoton
 
-     ! Setters
-     procedure, private :: setTMin
-     procedure, private :: setTMax
-     procedure, private :: resetTEqv
-     procedure, private :: resetSXAbs
+  ! Load brems. photon data type
+  include "bremsPhoton.f90"
 
-     ! Introspection
-     procedure, public  :: incrementTEQV
-     procedure, public  :: incrementSXABS
-     generic,   public  :: addTEQV  => incrementTEQV
-     generic,   public  :: addSXABS => incrementSXABS
-     procedure, public  :: sampleEnergy
+contains
 
-  end type BremsPhoton
+  ! Load constructors
+  include "constructors.f90"
+
+  ! Load getters
+  include "getters.f90"
+
+  ! Load setters
+  include "setters.f90"
+
+  ! Object introspection
+  include "introspection.f90"
+
+end module BremsPhotonMod
 

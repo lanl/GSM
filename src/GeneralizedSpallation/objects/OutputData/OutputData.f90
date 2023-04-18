@@ -1,46 +1,41 @@
 
 ! ==============================================================================
 !
-! Specifies the data type 'OutputData'
+! Module file for output data
 !
 !
 ! Written by CMJ, XCP-3, 11/2019
 !
 ! ==============================================================================
+module OutputDataMod
 
-  ! Tracks event-specific data for output files
-  type, public :: OutputData
-     private
+  use, intrinsic:: iso_fortran_env, only: int32, int64, real64
 
-     ! From /dele/ block
-     real(real64), public :: &
-          & sfu    = 0.0_real64   ! Counter for average fission probability
+  implicit none
+  private
 
-     ! From the /fiscem/ block
-     integer(int64), public :: nfis = 0_int64
+  ! General constructors
+  public :: newOutputData
+  interface newOutputData
+     module procedure constructorMain
+  end interface newOutputData
 
-     ! From /vul/ block
-     real(real64), public :: sigom = 0.0_real64
-     integer(int64), public :: &
-          & ncas  = 0_int64, &   ! Num. successful inelastic events
-          & intel = 0_int64, &   ! Num. total elastic events
-          & limcc = 0_int64      ! Total inelastic events to try
-     
-     ! For coalescence information
-     integer(int32), dimension(8), public :: ncoal = 0_int32
-     real(real64),   dimension(4), public :: pcoal = 0_int32
+  ! Load output data data type
+  include "outputData.f90"
 
-     ! Counts the number of times Fermi Break-up was used
-     integer(int64), public :: ifermi = 0_int64
+contains
 
-   contains
-     private
+  ! Load constructors
+  include "constructors.f90"
 
-     ! Getters
+  ! Load getters
+  ! include "getters.f90"
 
-     ! Setters
+  ! Load setters
+  ! include "setters.f90"
 
-     ! Introspection
+  ! Object introspection
+  ! include "introspection.f90"
 
-  end type OutputData
+end module OutputDataMod
 
