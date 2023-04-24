@@ -16,7 +16,7 @@
 #
 # TO USE, TYPE THE FOLLOWING IN A SHELL (LINUX) PROMPT
 # FROM THE TOP-LEVEL GSM DIRECTORY (quotations omitted):
-#         "sh -e updateOutputs.bc"
+#         "sh -e updateOutputs.sh"
 #
 ###########################################################
 reset
