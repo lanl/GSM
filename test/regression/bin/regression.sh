@@ -13,7 +13,7 @@
 #
 # TO USE, TYPE THE FOLLOWING IN A SHELL (LINUX) PROMPT
 # FROM THE TOP-LEVEL GSM DIRECTORY (quotations omitted):
-#         "sh -e regression.bc"
+#         "sh -e regression.sh"
 #
 ###########################################################
 set -e   # If errors occur, exit cleanly and return the error message:

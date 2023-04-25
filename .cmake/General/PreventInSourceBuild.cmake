@@ -14,7 +14,10 @@ macro (PreventInSourceBuild)
   get_filename_component(parent_dir ${CMAKE_SOURCE_DIR} DIRECTORY)
   string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${parent_dir}" insrc_subdir)
 
-  if (${insrc} OR ${insrc_subdir})
+  # Check for CMakeLists.txt file as well
+  file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
+
+  if (${insrc} OR ${insrc_subdir} OR EXISTS "${LOC_PATH}")
     message(FATAL_ERROR
       "\n${Red}ERROR!${ColorReset}\n"
       "     CMAKE_CURRENT_SOURCE_DIR="

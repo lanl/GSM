@@ -1,44 +1,52 @@
 # The Generalized Spallation Model and Event Generator
-___
-The Generalized Spallation Model, herein GSM, is a *mostly* object-oriented event generator for spallation events.  
-`Physics`: GSM is composed of several sub-models, consisting primarily of the Standard and Modified Dubna Cascade Models (DCM), a Coalescence model, Preequilibrium model, and the GEM2 (Generalized Evaporation Model), being used for simulating compound Evaporation and fission.  
-`Code`:GSM utilizes primarily Fortran2003 and Fortran2008, however does have some Fortran66 and Fortran77 within its Modified DCM sub-model.  
-`Parallel`: The GSM event generator is parallelizable for single-event simulations when **not** using the `Modified DCM` sub-model at this time.  
 
-> **GSM Version 1.0.0 beta**
+The Generalized Spallation Model, herein GSM, is a *mostly* object-oriented event generator for spallation events. GSM is intended to simulate particle interactions for energies greater than _100 MeV/A_, up to several _TeV/A_.
 
+> **GSM version 1.0.0 beta**
 
-## Table of Contents
-___
-1. [Disclaimer](#disclaimer)
-2. [License](#license)
-3. [Build Requirements](#build-requirements)
-4. [Compilation](#compilation)
-   -  [Testing](#testing)
-5. [Usage](#usage)
-   - [Standalone Usage](#standalone-usage)
-   - [Client Usage](#client-usage)
-6. [Documentation](#docs)
-7. [Contribute](#contribute)
-8. [Credits](#credits)
+## Contents
 
-
-## Disclaimer <a name="disclaimer"></a>
-___
->NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, NOR LOS ALAMOS NATIONAL SECURITY LLC, NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, COMPLETENESS, OR USEFULNESS OF ANY INFORMATION, APPARATUS, PRODUCT, OR PROCESS DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS.
++ [License and Disclaimer](#license-and-disclaimer)
++ [The GSM Event Generator](#about-the-gsm-event-generator)
+   + [Simulation Flow](#simulation-flow)
+   + [Software Architecture](#software-architecture)
++ [Build Requirements](#build-requirements)
++ [Compilation](#compilation)
+   + [Testing](#testing)
++ [Usage](#usage)
+   + [Standalone Usage](#standalone-usage)
+   + [Client Usage](#client-usage)
++ [Documentation](#docs)
++ [Contribute](#contribute)
++ [Credits](#credits)
 
 
 
-## License <a name="license"></a>
-___
-The predecessor of GSM, CEM, has been approved for release with associated LA-CC number LA-CC-04-085. The GSM event generator is licensed under an open-source BSD-3 license and copyrighted accordingly. Please see the [LICENSE](LICENSE) or [COPYRIGHT](COPYRIGHT) for details.
+## License and Disclaimer <a name="license-and-disclaimer"></a>
 
-The CEM software, the predecessor to GSM, was produced under U.S. Government contract DE-AC52-06NA25396 for Los Alamos National Laboratory for the U.S. Department of Energy. The Government is granted for itself and others acting on its behalf a paid-up, nonexclusive, irrevocable worldwide license in this material to reproduce, prepare derivative works, and perform publicly and display publicly. 
+The GSM is an open source program under the BSD-3 license. See the [LICENSE](LICENSE) and [COPYRIGHT](COPYRIGHT) for more details.
+
+
+## About the GSM Event Generator <a name="about-the-gsm-event-generator"></a>
+
+The Generalized Spallation Model is a Monte-Carlo event generator meant to simluate particle-particle collisions ranging from ~_100 MeV/A_ up to several _TeV/A_. The GSM utilizes a modern software architecture to help facilitate parallelized model physics simulations, as well as providing interchangeable interfaces to allow model substitutions where desired.
+
+
+### Simulation Flow <a name="simulation-flow"></a>
+
+The GSM simulates particle-particle interactions by first simulating an intra-nuclear cascade via the standard or modified Dubna cascade models. Interaction progeny then may coalesce together to form light ions. GSM assumes that the residual nuclei from the initial particle-particle interaction then begin to deexcite via preequilibrium and evaporation processes. Several light ions may be emitted from the residuals during preequilibrium deexcitation. GSM simulates residual evaporation of the equilibrated residual nuclei by considering particle evaporation and fission of the compound nucleus via the Generalized Evaporation Model, GEM2. A Fermi break-up deexcitation is utilized in place of preequilibrium and evaporation emissions for sufficiently small residual nuclei.
+
+
+### Software Architecture <a name="software-architecture"></a>
+
+The GSM utilizes primarily Fortran2003 and Fortran2008 standards, however legacy Fortran code still remains within the Modified DCM sub-model. GSM internally utilizes several sub-libraries that each implement a piece of the model physics described in the [simulation flow](#simulation-flow). Each sub-library utilizes an object-oriented software approach. Dependencies are abstracted from each implementation to help provide a flexible, robust, and parallelizable event generator. The architecture of the GSM thus allows for simultaneous particle event simulations.
 
 
 ## Build Requirements <a name="build-requirements"></a>
-___
-GSM was migrated to an object-oriented framework using primarily GNU Fortran with GCC-6.3.0. The following table shows the compilers that can successfully compile GSM:
+
+The GSM was migrated to an object-oriented framework using primarily GNU Fortran with GCC-6.3.0. GSM should built with most version of GFortran, however compilation by other compilers may be limited. Help in this area would be greatly appreciated.
+
+The following table shows the compilers that can successfully compile GSM:
 
 | Compiler         | Version       | Note                                                  |
 | :--------------- | :------------ | :---------------------------------------------------- |
@@ -49,63 +57,51 @@ GSM was migrated to an object-oriented framework using primarily GNU Fortran wit
 | Cygwin           | Not Tested    | |
 
 
-## Compilation <a name="compilation"></a>
-___
-A GSM executable can be created by navigating to the primary GSM top-level directory with any of the compilers supported (see the [build requirements](#build-requirements) section for more information). GSM uses a relatively basic CMake build system, **requiring** out-of-source builds. To install GSM, do the following:
-```bash
-mkdir <build-src>
-cd <build-src>
-cmake <options> <path-to-GSM-top-level-directory>
-make
-```
+## Compilation and Installation <a name="compilation"></a>
 
-More explicitly stated, users type the following to build GSM in the top-level directory of GSM:  
+A GSM executable can be created by navigating to the primary GSM top-level directory with any of the compilers supported (see the [build requirements](#build-requirements) section for more information). GSM uses a relatively basic CMake build system, **requiring** out-of-source builds. Executing CMake against the GSM will then generate a Makefile which can be used to build any one of the GSM's sub-models or the GSM itself.
+
+> Note that GSM utilizes a CMake build system. This build system has not yet been tested on non-linux operating systems.
+
+The GSM may be installed in a directory called `build` by executing the following:
+
 ```bash
 mkdir ./build
 cd ./build
-cmake ../
+cmake <options> ../
 make
 ```
 
-> Note: the CMake build platform was created using Linux; this CMake distribution has NOT been tested on non-linux operating systems nor has it been tested.
-
-
-The GSM installation is done simply by creating a directory outside the top-level directory and `./src/` subdirectories of GSM. In the above example for the out-of-source build, users are recommended to create a directory called `build`, say in the top-level directory of GSM. Users then `cd` to the directory and run CMake (``cmake ..``), generating all of the required Makefiles for each of the GSM libraries. To then compile GSM, users can type ``make`` in the `./build/` directory to generate all necessary object, module, and sub-module files.  
-All compiled module and sub-module files are stored in the `build` directory's `./modules/` folder.  
-All libraries created by `Make` during compilation are stored in the `build` directory's `./lib/` folder.  
-The executible for GSM, `xgsm1`, is housed in the `build` directory's `./bin/` folder.
-
-> GSM requires several data files and tables for its simulations to be in the directory where simulations are done. Upon being built, GSM provides such a directory, called `my_GSM`, in the top-level directory of GSM. This folder contains all required data tables and files in addition to the most recently built version of GSM. Note that this folder is *only* created when GSM is built successfully.
+GSM module files are all placed within the `modules` folder of the build path. Compiled libraries are stored in the `lib` folder, and the standalone GSM executable in the `bin` folder. The GSM further requires several data files to perform simulations. These files are provided in the `my_GSM` folder with the GSM executable for standalone simulations. The location of these files will likely need to be provided for simulations performed by consumers of the GSM upon data instantiation.
 
 
 ### Testing <a name="testing"></a>
 Upon creation of the GSM executable, users should perform all provided regression tests to verify the proper compilation f the GSM event generator. The folder `test`, housed in the top-level GSM directory, contains all available tests for users.  
-A script is provided to perform all regression tests to compare the results produced by GSM when built by `GCC6.3.0`. A limited number of tests are currently provided (30 at this time) with small event limits. It is recognized that the provided regression suite is not particularly thorough, however it is assumed to be sufficient.  
+A script is provided to perform all regression tests to compare the results produced by GSM when built by `GCC6.3.0`. A limited number of tests are currently provided (30 at this time) with small event limits. It is recognized that the provided regression suite is not particularly thorough, however it is assumed to be sufficient to catch the majority of unintended changes.
+ 
 Users can test their installation of GSM using the provided regression script from the top-level directory of GSM by typing the following:
 ```bash
-sh -e test/regression/bin/regression.bc
+sh -e test/regression/bin/regression.sh
 ```
 
 The script will attempt to create a clean installation of GSM by creating a `./build/` directory, compiling GSM, and performing all regression tests.
 
 > NOTE: The regression script utilizes a Python module (called `Comparer.py`) to compare output files from the previous the current versions of GSM. This python script will create a file for *each* set of input files tested stating the differences in the output file and flagging them. This Python script was developed utilizing `Python3.6`. It is possible that regression tests will successfully complete with an earlier version of Python, however it is not guaranteed to work properly.
 
-Regression tests can be updated easily with the following command, again being typed in the top level directory of GSM:
+Developers of the GSM will want to create a regression test baseline upon initial installation. Developers should ensure that the GSM builds successfully, and upon a successful build should execute the regression scripts and save the output files accordingly. See the regression bash file for details. Regression tests can be updated easily with the following command, again being typed in the top level directory of GSM, to overwrite the existing regression set with the last result set.
 ```bash
-sh -e test/regression/bin/updateOutputs.bc
+sh -e test/regression/bin/updateOutputs.sh
 ```
-
-This script will simply copy all files from the `./resultsCurrent/` directory to the `./resultsPrevious/` directory and change the files' names. This script was found helpful when either (a) increasing the number of events simulated for an input file, (b) when adding input files for testing, or (c) during the development of GSM for discovered bugs, modifications, improvements, or any combination of these.
-
 
 
 ## Usage <a name="usage"></a>
-___
-Upon being compiled and testing (see the [Compilation](#compilation) and [testing](#testing) sections), users, clients, or both can create and utilize GSM for their spallation simulations.
+
+Upon being compiled (see the [Compilation](#compilation) and [tested](#testing) sections), users, clients, or both can create and utilize GSM for their spallation simulations.
 
 
 ### Standalone (User) Usage <a name="standalone-usage"></a>
-GSM, as a standalone code, is contained by the `standaloneGSM` [module](src/DriverGSM/standaloneGSM.f90). An exectuble, named `xgsm?`, where the `?` is the current major version of GSM, is created upon successful [compilation](#compilation) in a directory named `my_GSM`, named accordingly in the [CMakeLists.txt file](./CMakeLists.txt).
+
+The GSM, as a standalone code, is contained by the `standaloneGSM` [module](src/DriverGSM/standaloneGSM.f90). An exectuble, named `xgsm?`, where the `?` is the current major version of GSM, is created upon successful [compilation](#compilation) in a directory named `my_GSM`, named accordingly in the [CMakeLists.txt file](./CMakeLists.txt).
 
 > Users start a simulation by typing `./xgsm?`, where the `?` is replaced by the current MAJOR version number according to the [CMakeLists.txt file](./CMakeLists.txt).
 
@@ -134,12 +130,16 @@ The `CEM03.03` Manual, [LA-UR-12-01364](https://laws.lanl.gov/vhosts/mcnp.lanl.g
 
 
 ### Client Usage (GSM API) <a name="client-usage"></a>
-What is up with the API? Talk about data initialization, model construction, etc.
+
+No client usage of the GSM is presently recorded. Potential clients that may benefit from implementation of the GSM include, but are not limited to:
++ MCNP
++ GEANT
++ Others?
 
 
 ## Documentation <a name="docs"></a>
-___
-Documentation of the GSM prior to its creation may be found by referencing various CEM and LAQGSM event generator reports. Note that some of the documentation contained by GSM refers to some of these reports and the references therein. Documentation of the source code for GSM may be easily generated via Doxygen as follows:
+
+Documentation of the GSM prior to its creation may be found by referencing various CEM and LAQGSM event generator reports. Note that some of the documentation contained by GSM refers to some of these reports and the references therein. Some documentation of GSM developments may additionally be found from brief research. Documentation of the source code for GSM may be easily generated via Doxygen as follows:
 
 ```bash
 cd ./Docs
@@ -150,14 +150,17 @@ Doing so generates, by default, documentation in both a `LaTeX` and `HTML` forma
 
 
 ## Contribute <a name="contribute"></a>
-___
+
 Contributions to GSM can be made by contacting Chase Juneau (ChaseJuneau@isu.edu) or Dr. Leslie Kerby (LeslieKerby@isu.edu) at the Idaho State University, or by contacting the [XCP-3](https://www.lanl.gov/org/padwp/adx/computational-physics/monte-carlo/index.php) group leader of the Los Alamos National Laboratory with information regarding the contribution.  
 
->Tip: developers can obtain a general understanding of the code styling within GSM by looking through the [Coalescence model code](./src/Coalescence). The code represented there is sufficiently short and clear to provide beginning developers with style reference and the architecture utilized for the GSM code.  
+>Tip: developers can obtain a general understanding of the code styling within GSM by looking through the [Coalescence model code](./src/Coalescence). The code represented there is sufficiently short and clear to provide beginning developers with style reference and the architecture utilized for the GSM code.  Generally speaking, models are divided into (a) a parameter module, (b) a data module containing static data for a given simulation, and (c) a model implementation.
 
-Questions about GSM, regarding code or physics, can be directed to C. Juneau (junechas@isu.edu) and Dr. Leslie Kerby (kerblesl@isu.edu).
+Questions about GSM, regarding code or physics, can be directed to C. Juneau (ChaseJuneau@isu.edu) and Dr. Leslie Kerby (LeslieKerby@isu.edu).
 
 
 ## Credits <a name="credits"></a>
-___
-The primary authors of GSM, originally CEM, include Drs. S. Mashnik, K. Gudima, and A. Sierk, with important contributions from R. Prael, M. Baznat, and N. Mokhov. Upgrades made to CEM03.03 prior to GSM's creation can be primarily accredited to Dr. Leslie Kerby, who provided several important updates to the preequilibrium model of GSM. GSM was migrated to an object-oriented framework by C. Juneau under the auspices of the Idaho State University and, in part, from funding provided by the Los Alamos National Laboritory under Idaho State University subcontract number 385443. The GSM library has been made open-source as part of this work.
+
+GSM was derived from CEM03.03 and LAQGSM03.03. The primary authors of these event generators include Drs. S. Mashnik, K. Gudima, and A. Sierk, with important contributions from R. Prael, M. Baznat, and N. Mokhov.
+Dr. L. Kerby, under the guidance of S. Mashnik, provided several important upgrades made to the CEM03.03 for light fragment emission in both the coalescense and preequilibrium implementations.
+C. Juneau then combined the CEM03.03 and LAQGSM03.03 models to form the GSM under the guidance of L. Kerby. The GSM was then migrated to the current architecture by C. Juneau under the auspices of the Idaho State University and, in part, from funding provided by the Los Alamos National Laboritory under Idaho State Univeristy subcontract number 385443.
+

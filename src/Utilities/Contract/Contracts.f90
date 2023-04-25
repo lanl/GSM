@@ -33,10 +33,14 @@ module Contracts
 #define Contracts_Level DEBUG_LEVEL
 #endif
 
+    logical, parameter, private:: &
+        & showLine = (Contracts_Level > PRODUCTION_LEVEL)
+
 ! Define the various macros
+#include "NewLine.f90"
 #include "Insist.f90"
 #include "Validate.f90"
-#include "Require.f90"
+!#include "Require.f90"
 !#include "Check.f90"
 !#include "Ensure.f90"
 !#include "Remember.f90"

@@ -9,9 +9,9 @@ PreventInSourceBuild()
 add_subdirectories(
   Contract
   Parallel
-  Logger
-  LogManager
-  Attributes
+  # Logger
+  # LogManager
+  # Attributes
   )
 
 
