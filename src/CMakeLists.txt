@@ -8,6 +8,7 @@ PreventInSourceBuild()
 
 # General Fortran objects used:
 add_subdirectories(
+  Harness
   Utilities
   RandomMC
   )
