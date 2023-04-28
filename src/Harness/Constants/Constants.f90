@@ -11,7 +11,7 @@
 !==============================================================================
 module hrnConstants
 
-  use, intrinsic :: iso_fortran_env, only: int32, real64, error_unit
+  use, intrinsic :: iso_fortran_env, only: int8, int16, int32, real64, error_unit
   implicit none
   private
 
