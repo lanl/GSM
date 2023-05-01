@@ -11,9 +11,9 @@
 !==============================================================================
 module hrnConstants
 
-  use, intrinsic :: iso_fortran_env, only: int8, int16, int32, real64, error_unit
-  implicit none
-  private
+   use, intrinsic :: iso_fortran_env, only: int8, int16, int32, real64, error_unit
+   implicit none
+   private
 
 #include "numbers.f90"
 
@@ -22,7 +22,6 @@ module hrnConstants
 contains
 
 #include "physics_interface.f90"
-
 
 end module hrnConstants
 

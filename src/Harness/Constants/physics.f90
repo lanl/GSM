@@ -6,19 +6,18 @@
 !==============================================================================
   !> The largest pre-calculated atomic weight
   integer(int16), parameter, private :: largest_mass_number = 300
-      
+
   !> Internal limit on allowed Z value of nuclear charge radius
   integer(int8), parameter, private :: largest_atomic_number = 100
-
 
   !> Consumer interface for retrieving A^(1/3)
   public :: at03rd
   interface at03rd
-      module procedure :: ato3rd_interface
+     module procedure :: ato3rd_interface
   end interface
 
   !> Internal parameterized constant of A^(1/3)
-  real(real64), parameter, private :: ato3rd_int(1 : largest_mass_number) = [  &
+  real(real64), parameter, private :: ato3rd_int(1:largest_mass_number) = [  &
        & 1.00000000000000, 1.25992104989487, 1.44224957030741, 1.58740105196820, 1.70997594667670,&
        & 1.81712059283214, 1.91293118277239, 2.00000000000000, 2.08008382305190, 2.15443469003188,&
        & 2.22398009056932, 2.28942848510666, 2.35133468772076, 2.41014226417523, 2.46621207433047,&
@@ -81,18 +80,15 @@
        & 6.66444370329191, 6.67194027170795, 6.67942003163937, 6.68688307698865, 6.69432950082169 & ! <300
        &    ]
 
-       !> Consumer interface for consumers to retrieve the nuclear charge radius
-      public :: r_rms
-      interface r_rms
-          module procedure :: r_rms_interface
-      end interface
+  !> Consumer interface for retrieving the nuclear charge radius [fm]
+  public :: r_rms
+  interface r_rms
+     module procedure :: r_rms_interface
+  end interface
 
-      !> Nuclear charge radius data structure
-      !>
-      !> The nuclear charge radius, in [fm].
-      !> Variable is setup as a 2-D array of form [Z + 1, A].
-      real(real64), private, dimension(:, :), allocatable :: r_rms_internal
-
-      !> Internal flag for whether or not the charge radius has been assigned
-      logical, private :: ncrIsAllocated = .FALSE.
+  !> Nuclear charge radius data structure
+  !>
+  !> The nuclear charge radius, in [fm].
+  !> Variable is setup as a 2-D array of form [Z + 1, A].
+  real(real64), private, dimension(:, :), allocatable :: r_rms_internal
 
