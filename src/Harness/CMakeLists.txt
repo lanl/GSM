@@ -13,7 +13,10 @@ set(model_name "Harness")
 
 # Load the sources used for the sub-model
 set(sources
+  ${CMAKE_CURRENT_LIST_DIR}/Types.f90
   ${CMAKE_CURRENT_LIST_DIR}/Constants/Constants.f90
+  ${CMAKE_CURRENT_LIST_DIR}/Contracts/Contracts.f90
+  ${CMAKE_CURRENT_LIST_DIR}/Harness.f90
   )
 
 # List the sub-model's dependencies
