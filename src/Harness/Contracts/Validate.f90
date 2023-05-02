@@ -8,7 +8,7 @@
 
 #ifndef Validate
 #define Validate(COND, MSG) \
-    if (.not.(COND)) validate(COND, MSG, __FILE__, __LINE__)
+    if (.not. (COND)) validate(COND, MSG, __FILE__, __LINE__)
 !   if (.not.(COND)) then \
 !       character(len=:), allocatable :: error_line \
 !       write(error_line, "(I5)") __LINE__ \

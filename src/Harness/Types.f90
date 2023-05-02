@@ -15,9 +15,7 @@ module hrnTypes
    implicit none
    public
 
-
 contains
-
 
 end module hrnTypes
 

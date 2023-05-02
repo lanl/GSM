@@ -19,9 +19,7 @@ module Harness
    implicit none
    public
 
-
 contains
-
 
 end module Harness
 

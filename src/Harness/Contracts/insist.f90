@@ -10,13 +10,13 @@
 !
 ! =============================================================================
 subroutine insist(cond, msg)
-    use iso_fortran_env, only: error_unit
+   use iso_fortran_env, only: error_unit
    implicit none
-   logical,      intent(in   ) :: cond
-   character(*), intent(in   ) :: msg
+   logical, intent(in) :: cond
+   character(*), intent(in) :: msg
 
-   if (.not.(cond)) then
-       error stop "Insist failure: " // msg
+   if (.not. (cond)) then
+      error stop "Insist failure: "//msg
    end if
 
    return

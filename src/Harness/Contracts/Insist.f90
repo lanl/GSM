@@ -9,5 +9,5 @@
 
 #ifndef Insist
 #define Insist(COND, MSG) \
-   if (.not.(COND)) insist(COND, MSG, __FILE__, __LINE__)
+   if (.not. (COND)) insist(COND, MSG, __FILE__, __LINE__)
 #endif

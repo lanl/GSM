@@ -11,15 +11,14 @@
 ! =============================================================================
 module Contracts
 
-  implicit none
-  private
+   implicit none
+   private
 
-  ! Contract functions
-  public:: &
-       & insist,   &
-       & validate, &
-       & require
-
+   ! Contract functions
+   public:: &
+        & insist,   &
+        & validate, &
+        & require
 
 ! Define various contract levels
 #define PRODUCTION_LEVEL    0
@@ -33,8 +32,8 @@ module Contracts
 #define Contracts_Level DEBUG_LEVEL
 #endif
 
-    logical, parameter, private:: &
-        & showLine = (Contracts_Level > PRODUCTION_LEVEL)
+   logical, parameter, private:: &
+       & showLine = (Contracts_Level > PRODUCTION_LEVEL)
 
 ! Define the various macros
 #include "NewLine.f90"
@@ -48,17 +47,16 @@ module Contracts
 !#include "NotConfigured.f90"
 !#include "NotReachable.f90"
 
- 
-    ! >>> DATA OBJECTS
+   ! >>> DATA OBJECTS
 contains
 
-     ! >>> CONSTRUCTORS
+   ! >>> CONSTRUCTORS
 
-     ! >>> INTROSPECTION
+   ! >>> INTROSPECTION
 
-     ! >>> SETTERS
+   ! >>> SETTERS
 
-     ! >>> PROCEDURES
+   ! >>> PROCEDURES
 #include "insist.f90"
 #include "validate.f90"
 #include "require.f90"

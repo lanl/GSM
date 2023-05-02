@@ -8,5 +8,5 @@
 
 #ifndef NEWLINE
 #define NEWLINE \
-    achar(13) // achar(10)
+    achar(13)//achar(10)
 #endif
