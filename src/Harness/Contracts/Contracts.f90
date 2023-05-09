@@ -27,11 +27,17 @@ module Contracts
 #define POSTCONDITION_LEVEL 3
 #define DEBUG_LEVEL         4
 
-! Define the Contracts level for the build
+!> Flags the type of contracts enforced
+!>
+!> The \c Contracts_Level macro specifies the type of contracts that are
+!> enforced. This is done to balance design enforcement and simulation
+!> performance.
+!>
 #ifndef Contracts_Level
 #define Contracts_Level DEBUG_LEVEL
 #endif
 
+    !> Flags to show the executing file / line in the validation
    logical, parameter, private:: &
        & showLine = (Contracts_Level > PRODUCTION_LEVEL)
 
