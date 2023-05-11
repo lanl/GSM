@@ -15,6 +15,7 @@ set(model_name "Harness")
 set(sources
   ${CMAKE_CURRENT_LIST_DIR}/Types.f90
   ${CMAKE_CURRENT_LIST_DIR}/Constants/Constants.f90
+  ${CMAKE_CURRENT_LIST_DIR}/ExceptionLite/ExceptionLite.f90
   ${CMAKE_CURRENT_LIST_DIR}/Contracts/Contracts.f90
   ${CMAKE_CURRENT_LIST_DIR}/Harness.f90
   )
