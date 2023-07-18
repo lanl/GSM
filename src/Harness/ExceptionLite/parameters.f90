@@ -5,10 +5,10 @@
 !>
 !==============================================================================
 
-!> Macro to define whether or not exceptions will include details about the file
+!> Define whether or not exceptions will include details about the file
 !> and line of the exception.
-#ifndef Exception_Location
-#define Exception_Location .true.
+#ifndef ExLocationDetails
+#define ExLocationDetails .true.
 #endif
 
    !> Indicates what the next exception ID will be.
@@ -32,6 +32,8 @@
    !> errors, and anything else that may occur at runtime not related to program
    !> logic and internal requirements.
    public :: RUNTIME_EXCEPTION
+
+   !> Define several enums for exception handling (internally used)
    enum, BIND(C)
       enumerator :: GENERAL_EXCEPTION
       enumerator :: LOGIC_EXCEPTION

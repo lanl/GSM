@@ -6,9 +6,9 @@
 !> create, retrieve, and clear lite exceptions.
 !>
 !> Consumers can use these via any of the following methods:
-!>    - throwRunTimeException - consumer "throws" (creates) an exception
-!>    - throwLogicException - consumer "throws" (creates) an exception
-!>    - throwException - consumer "throws" (creates) an exception
+!>    - throwRunTimeException - consumer "throws" (creates) a runtime exception
+!>    - throwLogicException - consumer "throws" (creates) a logic exception
+!>    - throwException - consumer "throws" (creates) an generic exception
 !>    - retrieveException - allows consumer to "catch" (retrieve) an exception
 !>    - handleException - allows consumer to flag an exception as handled
 !>    - throwUnhandled - halts execution for an unhandled exception
@@ -19,31 +19,36 @@
 !==============================================================================
 module hrnExceptionsLite
 
-   use, intrinsic :: iso_fortran_env, only: int64, error_unit
+   use, intrinsic :: iso_fortran_env, only: int16, error_unit
    implicit none
    private
 
-   public :: throwUnhandled
+   ! Methods to "throw" an exception (wrappers)
    public :: throwRunTimeException
    public :: throwLogicException
    public :: throwException
+   
+   ! Methods to retrieve and handle exceptions
+   public :: throwUnhandled
    public :: retrieveException
    public :: handleException
 
+   ! TODO: Review need
    private :: retrieveID
 
+   ! Internal method to throw an exception by enum type
    private :: throwExceptionInternal
 
    ! >>> MODULE MEMBERS
    include "parameters.f90"
 
    ! >>> DATA OBJECTS
-   include "exceptionLite.f90"
+   include "objects.f90"
 
 contains
 
    ! >>> PRIVATE MODULE / CLASS PROCEDURES
-   include "procedures.f90"
+   include "exception_procedures.f90"
 
    ! >>> PUBLIC PROCEDURES
    include "public_procedures.f90"

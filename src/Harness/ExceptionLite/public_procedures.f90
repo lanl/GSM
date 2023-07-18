@@ -19,7 +19,8 @@
    subroutine throwUnhandled(ex)
       class(ExceptionLite), intent(in) :: ex
 
-      error stop ex%what()
+      write(error_unit, "A (A) exception occurred: (A)") ex%kind(), ex%what()
+      error stop "Execution terminating."
 
    end subroutine
 

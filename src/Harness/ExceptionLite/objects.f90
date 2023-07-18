@@ -1,7 +1,7 @@
 ! ==============================================================================
 !
 !> \file
-!> \brief Contains the ExceptionLite class implementation
+!> \brief Contains the ExceptionLite module object definitions
 !> \author CMJ
 !
 ! ==============================================================================
@@ -17,26 +17,32 @@
 !> the consumer desires.
 !
 ! ==============================================================================
-   type, public :: ExceptionLite(id, msg, exKind)
+type, public :: ExceptionLite(id, msg, exKind)
    private
 
-   !> Error message for the exception
-   character(:), allocatable, private :: msg
-
-   !> Flags that the exception was handled properly
-   logical, private :: handled = .false.
-
    !> Indicates the ID of the exception
-   integer(int64), private :: id = 0
+   integer(int16), private :: identification = 0
+
+   !> Error message for the exception
+   character(:), allocatable, private :: message
 
    !> Indicates the exception type
    integer(kind(GENERAL_EXCEPTION)), private :: exKind = GENERAL_EXCEPTION
 
+   !> Flags that the exception was handled properly
+   logical, private :: exceptionHandled = .false.
+
    contains
    private
 
+   !> Returns the exception ID
+   procedure, public :: id
+
    !> Returns the internal exception message
    procedure, public :: what
+
+   !> Returns the exception type
+   procedure, public :: kind
 
    !> Changes the internal exception flag to mark the exception as handled
    procedure, public :: markHandled
@@ -44,15 +50,13 @@
    !> Returns a flag that indicates if the exception was handled or not
    procedure, public :: handled
 
-   !> Returns the exception ID
-   procedure, public :: id
-
-   !> Returns the exception type
-   procedure, public :: kind
-
    !> Class destructor to terminate the program if exception is unhandled
    final => throwUnhandled
 
 end type ExceptionLite
 
-!> TODO: Create exception list
+!> Internal exception list for exception aggregation
+!
+!> Exception list for internally managing and tracking thrown exceptions.
+type(ExceptionLite), private, dimension(:) :: exceptionList
+
