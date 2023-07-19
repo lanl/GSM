@@ -12,7 +12,7 @@
 #endif
 
    !> Indicates what the next exception ID will be.
-   integer(int64), private :: next_id = 1
+   integer(int16), private :: next_id = 1
 
    !> Defines a general exception type
    !>

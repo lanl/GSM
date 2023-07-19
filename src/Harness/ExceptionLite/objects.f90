@@ -17,7 +17,7 @@
 !> the consumer desires.
 !
 ! ==============================================================================
-type, public :: ExceptionLite(id, msg, exKind)
+type, public :: ExceptionLite(identification, message, file, line, exKind)
    private
 
    !> Indicates the ID of the exception
@@ -25,6 +25,12 @@ type, public :: ExceptionLite(id, msg, exKind)
 
    !> Error message for the exception
    character(:), allocatable, private :: message
+
+   !> The file that the exception occurred in
+   character(:), allocatable, private :: file
+
+   !> Line number of the file that the exception occurred on
+   integer(int16), private :: line = 0
 
    !> Indicates the exception type
    integer(kind(GENERAL_EXCEPTION)), private :: exKind = GENERAL_EXCEPTION

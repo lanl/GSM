@@ -33,8 +33,9 @@ module hrnExceptionsLite
    public :: retrieveException
    public :: handleException
 
-   ! TODO: Review need
-   private :: retrieveID
+   ! Used to set the exception ID. These should be unique for every exception
+   ! created.
+   public :: getNewID
 
    ! Internal method to throw an exception by enum type
    private :: throwExceptionInternal
