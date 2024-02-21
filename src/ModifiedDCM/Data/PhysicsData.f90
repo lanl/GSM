@@ -74,6 +74,7 @@ module modifiedDCMData
        & 339,      339 ]
 
   ! For radius of projectile/target w/ [2 < A <= 10]
+  ! TODO: Use r_rms module instead?
   real(real64), public, parameter, dimension(10) :: rms = [ &
        & 0.85, 2.095, 1.976, 1.671, 2.50, 2.57, 2.45, 2.519, 2.45, 2.42 ]
 
@@ -92,6 +93,17 @@ module modifiedDCMData
   real(real64),   public, protected, dimension(:, :), allocatable :: ecm
   !> \brief elg (size of [22, 50])
   real(real64),   public, protected, dimension(:, :), allocatable :: elg
+
+  ! For decay data read from the file:
+  !> \brief Indicates if decay channels will be simulated.
+  ! TODO: Place into mDCM data class?
+  logical, public :: model_decay = .true.
+  !> \brief look decay data (size of 400)
+  integer(int32), public, protected, dimension(:), allocatable :: look
+  !> \brief cbr decay data (size of 600)
+  real(real64),   public, protected, dimension(:), allocatable :: cbr
+  !> \brief mode decay data (size of 5, 600)
+  integer(int32), public, protected, dimension(:, :), allocatable :: mode
 
 
   ! For message handling:

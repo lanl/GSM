@@ -14,8 +14,6 @@
 
 ! ====================================================================
 
-    logical ::    nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
-    common/nodcay/nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
     logical iprint
     common/prints/iprint
     logical notre
@@ -45,7 +43,6 @@
 
 ! ====================================================================
 
-    nodcay=.false.
     notre=.false.
     lprnt=.false.
 !    LPRNT=.TRUE.
@@ -143,8 +140,6 @@
     integer(int32) :: look, mode
     real(real64)   :: cbr
     common/dkytab/look(400),cbr(600),mode(5,600)
-    logical ::    nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
-    common/nodcay/nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
 
 ! ====================================================================
 
@@ -154,7 +149,7 @@
     do i = 1, 400
        look(i) = 0
     enddo
-    if(nodcay) return
+    if(.not. model_decay) return
     rewind decayUnit
 
 200 loop=loop+1

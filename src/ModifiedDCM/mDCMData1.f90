@@ -1859,8 +1859,6 @@
 !     LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
     common/dkytab/look(400),cbr(600),mode(5,600)
     common/idrun/idver,idg(2),ievt
-    logical nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
-    common/nodcay/nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
     common/primar/scm,halfe,ecm,njet,idin(2),nevent,ntries
     common/prtout/nevprt,njump
     logical keys,keyon
@@ -1937,9 +1935,6 @@
 !
 !          DATA FOR LSTPRT
     data lstprt/0/
-!          DATA FOR NODCAY
-    data nodcay/.false./,noeta/.false./,noka0/.true./
-    data nopi0,nonunu,noevol,nohadr/4*.true./
 !
 !          DATA FOR NOTRE
     data notre/.true./
