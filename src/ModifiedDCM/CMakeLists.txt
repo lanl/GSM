@@ -31,6 +31,7 @@ set(sources
 
 # List the sub-model's dependencies
 set(dependencies
+  General
   Random_Number_Generator
   Standard_DCM
   )
