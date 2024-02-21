@@ -1855,7 +1855,6 @@
 
 ! ====================================================================
 !        INITIALIZE ALL COMMON BLOCKS
-    common/itapes/itdky,itevt,itcom,itlis
     common/force/ nforce,iforce(20),mforce(5,20)
 !     LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
     common/dkytab/look(400),cbr(600),mode(5,600)
@@ -1936,8 +1935,6 @@
 !          IDVER=100*VERSION+CYCLE
     data idver/102/,idg/2*0/,ievt/0/
 !
-!          DATA FOR ITAPES
-    data itdky,itevt,itcom,itlis/8,17,15,29/
 !          DATA FOR LSTPRT
     data lstprt/0/
 !          DATA FOR NODCAY

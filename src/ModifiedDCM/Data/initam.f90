@@ -16,8 +16,6 @@
 
     logical ::    nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
     common/nodcay/nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
-    integer(int32) :: itdky, itevt, itcom, itlis
-    common/itapes/itdky,itevt,itcom,itlis
     logical iprint
     common/prints/iprint
     logical notre
@@ -47,10 +45,6 @@
 
 ! ====================================================================
 
-    itcom=15
-    itlis=16
-    itevt=17
-    itdky=18
     nodcay=.false.
     notre=.false.
     lprnt=.false.
@@ -95,7 +89,6 @@
 
 ! ====================================================================
 
-!    COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
     real(real64) :: pi, sqrt2, alf, gf, units
     common/const/pi,sqrt2,alf,gf,units
 
@@ -112,7 +105,7 @@
   end subroutine setcon
 
 
-  subroutine setdky(lprint)
+  subroutine setdky(printStatus)
 
 ! ====================================================================
 !
@@ -122,10 +115,11 @@
 !
 ! ====================================================================
 
-    use, intrinsic:: iso_fortran_env, only: int32, real64
+    use, intrinsic:: iso_fortran_env, only: int32, real64, &
+        & output_unit, error_unit
 
     implicit none
-    logical, intent(in   ) :: lprint
+    logical, intent(in   ) :: printStatus
 
     integer(int32) :: i, ifl1, ifl2, ifl3, index, iold, ires, itype, &
          & jspin, k, loop
@@ -139,11 +133,10 @@
     character(len=*), parameter :: &
          & iquit = " end", &
          & iblank = "     "
+     integer(int32) :: rc
 
 ! ====================================================================
 
-    integer(int32) :: itdky, itevt, itcom, itlis
-    common/itapes/itdky,itevt,itcom,itlis
     integer(int32) :: nforce, iforce, mforce
     common/force/nforce,iforce(20),mforce(5,20)
     ! LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
@@ -155,12 +148,7 @@
 
 ! ====================================================================
 
-    if(lprint) write(itlis,10)
-10  format(1h1,30(1h*)/2h *,28x,1h*/ &
-         & 2h *,5x,17hcolli decay table,5x,1h*/ &
-         & 2h *,28x,1h*/1x,30(1h*)// &
-         & 6x,4hpart,18x,10hdecay mode,19x,6hcum br,15x,5hident,17x, &
-         & 11hdecay ident/)
+    if(printStatus) write(output_unit,10)
     loop=0
     iold=0
     do i = 1, 400
@@ -187,8 +175,20 @@
     if (decayUnit == -1_int32) &
          & open(newunit = decayUnit, &
          & file = effectiveDecayFile, &
-         & status = "old", action = "read")
-    read(decayUnit,*,end=300) ires,itype,br,(imode(i),i=1,5)
+         & status = "old", action = "read", iostat = rc)
+     if (rc /= 0) then
+         write(error_unit, "(A)") "Error: Failed to open file " // &
+             & effectiveDecayFile
+         stop
+     end if
+
+    read(decayUnit, *, iostat = rc, end = 300) ires,itype,br,(imode(i),i=1,5)
+    if (rc /= 0) then
+        write(error_unit, "(A)") "Error: Failed to read file " // &
+            & effectiveDecayFile
+        stop
+    end if
+
     if(ires == 0) go to 300
 !     IF(NOPI0.AND.IRES.EQ.110) GO TO 220
 !     IF(NOETA.AND.IRES.EQ.220) GO TO 220
@@ -202,9 +202,8 @@
        if(imode(i).ne.0) call label(lmode(i),imode(i))
     enddo
     call label(lres,ires)
-    if(lprint) write(itlis,20) lres,(lmode(k),k=1,5), &
+    if(printStatus) write(output_unit,20) lres,(lmode(k),k=1,5), &
          & br,ires,(imode(k),k=1,5)
-20  format(6x,a5,6x,5(a5,2x),3x,f8.5,15x,i5,4x,5(i5,2x))
     go to 200
 !          SET FORCED DECAY MODES
 300 if(nforce == 0) go to 400
@@ -220,21 +219,28 @@
     enddo
 
 !  READ AND PRINT NOTES FROM DECAYTABLE FILE
-400 if(lprint) then
+400 if(printStatus) then
 410    read(decayUnit,1002,end=9998) lread
-1002   format(10a8)
        if(lread(1) == iquit) go to 9998
-       write(itlis,1003) lread
-1003   format(1x,10a8)
+       write(output_unit,1003) lread
        go to 410
     end if
 
     close(decayUnit)
 9998 return
 
-9999 write(itlis,30)
-30  format(//44h ***** error in setdky ... loop.GT.600 *****)
+9999 write(output_unit,30)
     close(decayUnit)
     return
+! ====================================================================
+10  format(1h1,30(1h*)/2h *,28x,1h*/ &
+         & 2h *,5x,17hcolli decay table,5x,1h*/ &
+         & 2h *,28x,1h*/1x,30(1h*)// &
+         & 6x,4hpart,18x,10hdecay mode,19x,6hcum br,15x,5hident,17x, &
+         & 11hdecay ident/)
+20  format(6x,a5,6x,5(a5,2x),3x,f8.5,15x,i5,4x,5(i5,2x))
+30  format(//44h ***** error in setdky ... loop.GT.600 *****)
+1002   format(10a8)
+1003   format(1x,10a8)
 ! ====================================================================
   end subroutine setdky

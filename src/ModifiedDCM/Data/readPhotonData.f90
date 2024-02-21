@@ -11,7 +11,7 @@
 ! ======================================================================
 
     use, intrinsic:: iso_fortran_env, only: int32, real64
-    use modifiedDCMParams, only: zro, two, twpi, degreeToRad, emnucg
+    use modifiedDCMParams, only: two, emnucg
 
     implicit none
     character(len=*), intent(in   ) :: photonFile
