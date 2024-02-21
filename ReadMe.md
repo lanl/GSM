@@ -50,7 +50,7 @@ The following table shows the compilers that can successfully compile GSM:
 
 | Compiler         | Version       | Note                                                  |
 | :--------------- | :------------ | :---------------------------------------------------- |
-| GCC              | 4.6.1         | Regression differences seen with GCC4.7.2 and earlier |
+| GCC              | 4.6.1         | Regression differences seen with GCC4.7.2 and earlier. Issues reported for gfortran 7+ |
 | Intel            | Not Tested    | |
 | PGI              | Not Tested    | |
 | LLVM             | Not Tested    | |
@@ -76,6 +76,7 @@ GSM module files are all placed within the `modules` folder of the build path. C
 
 
 ### Testing <a name="testing"></a>
+
 Upon creation of the GSM executable, users should perform all provided regression tests to verify the proper compilation f the GSM event generator. The folder `test`, housed in the top-level GSM directory, contains all available tests for users.  
 A script is provided to perform all regression tests to compare the results produced by GSM when built by `GCC6.3.0`. A limited number of tests are currently provided (30 at this time) with small event limits. It is recognized that the provided regression suite is not particularly thorough, however it is assumed to be sufficient to catch the majority of unintended changes.
  
@@ -89,6 +90,7 @@ The script will attempt to create a clean installation of GSM by creating a `./b
 > NOTE: The regression script utilizes a Python module (called `Comparer.py`) to compare output files from the previous the current versions of GSM. This python script will create a file for *each* set of input files tested stating the differences in the output file and flagging them. This Python script was developed utilizing `Python3.6`. It is possible that regression tests will successfully complete with an earlier version of Python, however it is not guaranteed to work properly.
 
 Developers of the GSM will want to create a regression test baseline upon initial installation. Developers should ensure that the GSM builds successfully, and upon a successful build should execute the regression scripts and save the output files accordingly. See the regression bash file for details. Regression tests can be updated easily with the following command, again being typed in the top level directory of GSM, to overwrite the existing regression set with the last result set.
+
 ```bash
 sh -e test/regression/bin/updateOutputs.sh
 ```
@@ -133,34 +135,36 @@ The `CEM03.03` Manual, [LA-UR-12-01364](https://laws.lanl.gov/vhosts/mcnp.lanl.g
 
 No client usage of the GSM is presently recorded. Potential clients that may benefit from implementation of the GSM include, but are not limited to:
 + MCNP
-+ GEANT
-+ Others?
++ GEANT4
++ MARS
++ FLUKA
++ etc.
 
 
 ## Documentation <a name="docs"></a>
 
-Documentation of the GSM prior to its creation may be found by referencing various CEM and LAQGSM event generator reports. Note that some of the documentation contained by GSM refers to some of these reports and the references therein. Some documentation of GSM developments may additionally be found from brief research. Documentation of the source code for GSM may be easily generated via Doxygen as follows:
+Documentation of the GSM prior to its creation may be found by referencing various CEM and LAQGSM event generator reports. Note that some of the documentation contained by GSM refers to some of these reports and the references therein. Some documentation of GSM developments may additionally be found from brief research.
+
+Documentation of the source code for GSM may be easily generated via Doxygen using the below command(s). Note that this is an ongoing effort, so documentation may not be fully functional for all of the GSM and it's sub-models.
 
 ```bash
 cd ./Docs
 doxygen Doxyfile.in
 ```
 
-Doing so generates, by default, documentation in both a `LaTeX` and `HTML` format. The generated `HTML` documentation may be viewed by pointing a browser to the `index.html` file within the `Docs/Docs_HTML` directory.
+The documentation will be generated in both a `LaTeX` and `HTML` format. The generated `HTML` documentation may be viewed by pointing a browser to the `index.html` file within the `Docs/Docs_HTML` directory.
 
 
 ## Contribute <a name="contribute"></a>
 
-Contributions to GSM can be made by contacting Chase Juneau (ChaseJuneau@isu.edu) or Dr. Leslie Kerby (LeslieKerby@isu.edu) at the Idaho State University, or by contacting the [XCP-3](https://www.lanl.gov/org/padwp/adx/computational-physics/monte-carlo/index.php) group leader of the Los Alamos National Laboratory with information regarding the contribution.  
-
->Tip: developers can obtain a general understanding of the code styling within GSM by looking through the [Coalescence model code](./src/Coalescence). The code represented there is sufficiently short and clear to provide beginning developers with style reference and the architecture utilized for the GSM code.  Generally speaking, models are divided into (a) a parameter module, (b) a data module containing static data for a given simulation, and (c) a model implementation.
-
-Questions about GSM, regarding code or physics, can be directed to C. Juneau (ChaseJuneau@isu.edu) and Dr. Leslie Kerby (LeslieKerby@isu.edu).
+Please review the [Contributing guide](.\CONTRIBUTING.md) for a more detailed guide on contributing to this project. Please send any questions about contributing to [Chase Juneau (ChaseJuneau@isu.edu)](mailto:ChaseJuneau@isu.edu) or [Dr. Leslie Kerby (LeslieKerby@isu.edu)](LeslieKerby@isu.edu).
 
 
 ## Credits <a name="credits"></a>
 
 GSM was derived from CEM03.03 and LAQGSM03.03. The primary authors of these event generators include Drs. S. Mashnik, K. Gudima, and A. Sierk, with important contributions from R. Prael, M. Baznat, and N. Mokhov.
+
 Dr. L. Kerby, under the guidance of S. Mashnik, provided several important upgrades made to the CEM03.03 for light fragment emission in both the coalescense and preequilibrium implementations.
-C. Juneau then combined the CEM03.03 and LAQGSM03.03 models to form the GSM under the guidance of L. Kerby. The GSM was then migrated to the current architecture by C. Juneau under the auspices of the Idaho State University and, in part, from funding provided by the Los Alamos National Laboritory under Idaho State Univeristy subcontract number 385443.
+
+C. Juneau combined the CEM03.03 and LAQGSM03.03 models to form the GSM under the guidance of L. Kerby. The GSM was then migrated to the current architecture by C. Juneau under the auspices of the Idaho State University and, in part, from funding provided by the Los Alamos National Laboritory under Idaho State Univeristy subcontract number 385443.
 
