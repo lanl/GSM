@@ -1871,10 +1871,6 @@
     logical nocol
     common/commul/ multp
     logical multp
-    common/notre/ notre
-    logical notre
-    common /prints/ iprint
-    logical iprint
     common/primp0/ p0
     common/primpl/ pl
     common/comrii/ r12,r1,r2
@@ -1935,12 +1931,6 @@
 !
 !          DATA FOR LSTPRT
     data lstprt/0/
-!
-!          DATA FOR NOTRE
-    data notre/.true./
-!
-!          DATA FOR PRINTS
-    data iprint/.false./
 !
 !          DATA FOR PRIMAR
     data idin/1120,1120/,halfe/10./,scm/400./,ecm/20./

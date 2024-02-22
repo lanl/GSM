@@ -14,10 +14,6 @@
 
 ! ====================================================================
 
-    logical iprint
-    common/prints/iprint
-    logical notre
-    common/notre/ notre
     real(real64) :: enbou
     common/comenb/ enbou
     integer(int32) :: icms
@@ -43,10 +39,7 @@
 
 ! ====================================================================
 
-    notre=.false.
     lprnt=.false.
-!    LPRNT=.TRUE.
-    iprint=.false.
     yesela=.false.
     keyhh=.false.
     keypla=.false.
