@@ -23,8 +23,11 @@ ${common_flags} -O0 \
 -Wall -Wno-conversion \
 -Wno-line-truncation -Wno-error=line-truncation \
 -pedantic -fcheck=all -fbacktrace \
--ffpe-summary=all \
 -finit-real=snan")
+if (NOT "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "5")
+  set (CMAKE_Fortran_FLAGS_DEBUG "\
+-ffpe-summary=all")
+endif()
 
 # set (CMAKE_Fortran_FLAGS_DEBUG "\
 # ${common_flags} -O0 \
