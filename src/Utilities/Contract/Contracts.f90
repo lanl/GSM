@@ -16,52 +16,36 @@ module Contracts
 
   ! Contract functions
   public:: &
-       & insist,   &
-       & validate, &
-       & require
+       & require, &
+       & check, &
+       & ensure, &
+       & insist, &
+       & not_implemented
 
 
-! Define various contract levels
-#define PRODUCTION_LEVEL    0
-#define PRECONDITION_LEVEL  1
-#define INTRASCOPE_LEVEL    2
-#define POSTCONDITION_LEVEL 3
-#define DEBUG_LEVEL         4
+#include "contract_macros.fpp"
 
-! Define the Contracts level for the build
-#ifndef Contracts_Level
-#define Contracts_Level DEBUG_LEVEL
-#endif
+    !> \brief Indicates if the line details should be shown
+    logical, parameter, private :: &
+        & showLine = (CONTRACTS_LEVEL > PRODUCTION_LEVEL)
 
-    logical, parameter, private:: &
-        & showLine = (Contracts_Level > PRODUCTION_LEVEL)
+    !> \brief Specifies a new line
+    character(*), parameter, private:: &
+        & newLine = achar(13) // achar(10)
 
-! Define the various macros
-#include "NewLine.f90"
-#include "Insist.f90"
-#include "Validate.f90"
-!#include "Require.f90"
-!#include "Check.f90"
-!#include "Ensure.f90"
-!#include "Remember.f90"
-!#include "NotImplemented.f90"
-!#include "NotConfigured.f90"
-!#include "NotReachable.f90"
-
- 
     ! >>> DATA OBJECTS
 contains
 
-     ! >>> CONSTRUCTORS
-
-     ! >>> INTROSPECTION
-
-     ! >>> SETTERS
+     ! >>> HELPERS
+#include "append_location.f90"
+#include "stop_execution.f90"
 
      ! >>> PROCEDURES
-#include "insist.f90"
-#include "validate.f90"
 #include "require.f90"
+#include "check.f90"
+#include "ensure.f90"
+#include "insist.f90"
+#include "not_implemented.f90"
 
 end module Contracts
 
