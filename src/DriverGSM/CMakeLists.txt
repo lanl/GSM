@@ -18,6 +18,7 @@ set(sources
 
 # List the sub-model's dependencies
 set(dependencies
+  Contracts
   Parallel
   GSM
   )
