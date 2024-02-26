@@ -52,7 +52,7 @@
 
 ! Define "Insist" - always on for conditions that must always be met.
 #define Insist(COND, MSG) \
-   call insist(COND, MSG, __FILE__, __LINE__) \
+   call insist(COND, MSG, __FILE__, __LINE__)
 
 
 #define NotImplemented(FEATURE) \
