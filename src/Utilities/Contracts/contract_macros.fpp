@@ -27,7 +27,7 @@
 
 
 ! Define "Require" - used for parameter validation (pre-condition checks)
-#if CONTRACTS_LEVEL >= 1
+#if CONTRACTS_LEVEL >= PRECONDITION_LEVEL
 #define Require(COND) call require(COND, __FILE__, __LINE__)
 #else
 #define Require(COND)
@@ -35,7 +35,7 @@
 
 
 ! Define "Check" - used for intra-scope validation (mid-calculation checks)
-#if CONTRACTS_LEVEL >= 2
+#if CONTRACTS_LEVEL >= INTRASCOPE_LEVEL
 #define Check(COND) call check(COND, __FILE__, __LINE__)
 #else
 #define Check(COND)
@@ -43,7 +43,7 @@
 
 
 ! Define "Ensure" - used for post-condition validation (after-calculation checks)
-#if CONTRACTS_LEVEL >= 3
+#if CONTRACTS_LEVEL >= POSTCONDITION_LEVEL
 #define Ensure(COND) call ensure(COND, __FILE__, __LINE__)
 #else
 #define Ensure(COND)
