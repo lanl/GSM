@@ -7,6 +7,9 @@
 cmake_minimum_required (VERSION 3.8.0)
 PreventInSourceBuild()
 
+# Specify library compilation definitions
+include (compile_definitions)
+
 # Obtain the compiler name and check capabilities
 include(${CMAKE_Fortran_COMPILER_ID} RESULT_VARIABLE found)
 if(NOT found)
