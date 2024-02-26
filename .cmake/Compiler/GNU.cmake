@@ -26,6 +26,7 @@ ${common_flags} -O0 \
 -finit-real=snan")
 if (NOT "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "5")
   set (CMAKE_Fortran_FLAGS_DEBUG "\
+${CMAKE_Fortran_FLAGS_DEBUG} \
 -ffpe-summary=all")
 endif()
 
