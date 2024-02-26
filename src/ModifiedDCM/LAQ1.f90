@@ -7628,9 +7628,9 @@
     an(3) = ar(1)*br(2)-ar(2)*br(1)
     pr(1)=pstar(1)*br(1)/alpha2+(pstar(3)-alpha1*pstar(1)/alpha2) &
          & *ar(1)/amod+(pstar(2)*an(1))/(alpha2*amod)
-    pr(2)=pstar(1)*br(2)/alpha2+(pstar(3)-alpha1*pstar(1)/alpha2) & 
+    pr(2)=pstar(1)*br(2)/alpha2+(pstar(3)-alpha1*pstar(1)/alpha2) &
          & *ar(2)/amod+(pstar(2)*an(2))/(alpha2*amod)
-    pr(3)=pstar(1)*br(3)/alpha2+(pstar(3)-alpha1*pstar(1)/alpha2) & 
+    pr(3)=pstar(1)*br(3)/alpha2+(pstar(3)-alpha1*pstar(1)/alpha2) &
          & *ar(3)/amod+(pstar(2)*an(3))/(alpha2*amod)
     return
 !----> do  11  k=1,3
@@ -8843,10 +8843,8 @@
     real(real64) ::   md,m2
     common /primp/ pp(3)
     common /taud3/ tau0
-    common /isob3/ isob3
     common /memorylaq/ pme(9,5999),ime(5,5999)
     ind=0
-    if(isob3 == 0)  return
     iatt=0
     rnd=rndm(-1.0_real64)
     if(mq == 2) then
@@ -8883,7 +8881,6 @@
     md=sqrt(u*(u-2.*e2)+m2**2)
     if(md < 1.082)                   go  to  1
     call  wmd(md,t0,fmd)
-    if(isob3 == 2)                    go  to  2
     drnd=rndm(-1.0_real64)
     if(drnd > fmd)                   go  to  1
 2   continue
