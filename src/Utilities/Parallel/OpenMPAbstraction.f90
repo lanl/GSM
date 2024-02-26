@@ -17,7 +17,10 @@ module OpenMPAbstraction
 #if defined(_OPENMP)
   use OMP_LIB
 #endif
-  use Contracts, only: Require
+
+  ! Import Contracts
+  use Contracts
+
   implicit none
   private
 
@@ -83,8 +86,10 @@ contains
     use, intrinsic:: iso_fortran_env, only: int32
     implicit none
     integer(int32), intent(in   ) :: numThreads
-    call Require(numThreads > 0)
 #if defined(_OPENMP)
+    call insist(numThreads > 0, &
+        & "Number of threads cannot be less than 0.", &
+        & __FILE__, __LINE__)
     call omp_set_num_threads(numThreads)
 #endif
     return
