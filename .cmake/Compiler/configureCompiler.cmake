@@ -7,9 +7,6 @@
 cmake_minimum_required (VERSION 3.8.0)
 PreventInSourceBuild()
 
-# Set Fortran compiler FOR MINERVE ONLY
-set(CMAKE_Fortran_COMPILER "/opt/rh/devtoolset-6/root/bin/gfortran")
-
 # Obtain the compiler name and check capabilities
 include(${CMAKE_Fortran_COMPILER_ID} RESULT_VARIABLE found)
 if(NOT found)
