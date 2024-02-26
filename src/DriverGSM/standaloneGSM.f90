@@ -9,7 +9,7 @@
 module standaloneGSM
 
   use Contracts
-#include "../Utilities/Contract/contract_macros.fpp"
+#include "../Utilities/Contracts/contract_macros.fpp"
   implicit none
   private
 
