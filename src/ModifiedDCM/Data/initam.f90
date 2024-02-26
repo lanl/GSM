@@ -14,6 +14,8 @@
 
 ! ====================================================================
 
+! enbou appears to be related to a Coulomb barrier possibly; should
+! be made a simulation option and better described.
     real(real64) :: enbou
     common/comenb/ enbou
     integer(int32) :: icms
