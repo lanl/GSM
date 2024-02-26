@@ -43,7 +43,12 @@ if [ -d "./build" ]; then
 fi
 mkdir ./build
 cd ./build
-cmake -DCMAKE_BUILD_TYPE="DEBUG" ../
+if [ -z "${1}" ]; then
+  cmake -DCMAKE_BUILD_TYPE="DEBUG" ../
+else
+  echo "Specified regression compiler: ${1}"
+  cmake -DCMAKE_BUILD_TYPE="DEBUG" -DCMAKE_Fortran_COMPILER="${1}" ../
+fi
 make
 reset
 make install
