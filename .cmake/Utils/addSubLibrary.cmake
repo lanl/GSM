@@ -30,6 +30,12 @@ macro (add_sublibrary target sources dependencies)
     ${sources}
     )
 
+  target_compile_definitions(
+    ${subtarget}
+    PUBLIC
+    ${${PROJECT_NAME}_compile_definitions}
+    )
+
   # Link to all given dependencies
   if (dependencies)
     target_link_libraries(${subtarget}
