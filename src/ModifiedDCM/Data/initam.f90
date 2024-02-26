@@ -34,8 +34,6 @@
     common/comwti/ wtime
     integer(int32) :: iorhei
     common/iorhei/ iorhei
-    integer(int32) :: isob3
-    common/isob3/ isob3
 
 ! ====================================================================
 
@@ -51,7 +49,6 @@
     inside=0
     ivalon=0
     iorhei=1
-    isob3=1
 
     ! IF LAB. FRAME
     ICMS=0

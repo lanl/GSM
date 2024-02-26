@@ -11,7 +11,7 @@ c
 c          laqgsm2007_2.f   subroutines :
 ******************************************************************
 c
-c last changes by KKG for interface with MARS code       23.03.07                      
+c last changes by KKG for interface with MARS code       23.03.07
 c     last correction in CLUSLE, REP/KKG, Oct. 2004
 c     sigma=0.51             G. 25.05.01
 C   * * * * * * * * *  11-16-94 03:27PM  MV <==> 5999 * * * * * *
@@ -997,7 +997,6 @@ c
 C  COMPUTE FIXED PARTICLE MASS
       COMMON /DATA1/CMIX(6,2),PMASM(18),PMASB(18),PGAMM(18),
      *PGAMB(18),MESO(9,2)
-      COMMON /ISOB3/ISOB3
       IF(IK-36) 1,1,2
  1    AMASF=PMASM(IK)
       RETURN
@@ -1014,23 +1013,21 @@ C  COMPUTE PARTICLE MASS
       COMMON /ISOB3/ISOB3
       COMMON /INTTYP/ITYP
       COMMON /ITHEA/ITHEA(11)
-      IF(IK-36) 1,1,3
- 1    AMAS=PMASM(IK)
-      IF(IK.EQ.10.OR.IK.EQ.11.OR.IK.EQ.16) GO  TO  2
-      RETURN
- 2    IF(ISOB3.NE.1)  RETURN
-      CALL MRHO(AMR,GD)
-      AMAS=AMR
-      RETURN
- 3    AMAS=PMASB(IK-36)
-      IF(IK.LT.45.OR.IK.GT.48) RETURN
-      IF(ISOB3.NE.1)  RETURN
-1991  CONTINUE
-C     IF((ITHEA(8).EQ.1).OR.(ITYP.EQ.3))  THEN
-C           CALL  MDELT1(AMD,GD)
-C     ELSE
-            CALL  MDELTA(AMD,GD)
-C     ENDIF
+      if ((ik - 36) <= 0) then
+         AMAS=PMASM(IK)
+         if (( IK /= 10 .AND. IK /= 11 .AND. IK /= 16) .OR.
+     *(isob3 /= 1)) then
+            return
+         end if
+         CALL MRHO(AMR,GD)
+         AMAS=AMR
+         RETURN
+      else
+         AMAS=PMASB(IK-36)
+         IF(IK < 45 .OR. 48 < IK) RETURN
+         IF(ISOB3.NE.1)  RETURN
+      end if
+      CALL  MDELTA(AMD,GD)
       AMAS=AMD
       RETURN
       END
@@ -3490,11 +3487,12 @@ C     WRITE(ITLIS,1200)IK1,IK2,PLALB
       GAM2=WIDTLE(GAMH2)
       AMP1=AMH1+GAM1
       AMP2=AMH2+GAM2
-      IF(ISOB3.NE.1) GO TO 107
-      IF(IKH1.GE.45.AND.IKH1.LE.48)               AMP1=AMAS(IKH1)
-      IF(IKH2.GE.45.AND.IKH2.LE.48)               AMP2=AMAS(IKH2)
-      IF(IKH1.EQ.10.OR.IKH1.EQ.11.OR.IKH1.EQ.16)  AMP1=AMAS(IKH1)
-      IF(IKH2.EQ.10.OR.IKH2.EQ.11.OR.IKH2.EQ.16)  AMP2=AMAS(IKH2)
+      IF(ISOB3 == 1) THEN
+         IF(IKH1.GE.45.AND.IKH1.LE.48)               AMP1=AMAS(IKH1)
+         IF(IKH2.GE.45.AND.IKH2.LE.48)               AMP2=AMAS(IKH2)
+         IF(IKH1.EQ.10.OR.IKH1.EQ.11.OR.IKH1.EQ.16)  AMP1=AMAS(IKH1)
+         IF(IKH2.EQ.10.OR.IKH2.EQ.11.OR.IKH2.EQ.16)  AMP2=AMAS(IKH2)
+      end if
 C  CHECK ENERGY THRESHOLD
 107   IF(W.LT.(AMP1+AMP2)) GO TO 205
 109   HA=AMP1
@@ -3658,7 +3656,7 @@ C
       COMMON/NCASCA/NCAS,NCPRI
       LOGICAL VALON
       DIMENSION IK(5),PO(3),IRL(250),ILL(250)
-C   
+C
       CHARACTER*8 LAB1,LAB2
       LOGICAL BACK
       LOGICAL LRET
@@ -4733,7 +4731,7 @@ C     IF(IB(IKA).EQ.-1.AND.IB(IKB).NE.-1) B=12.0
       NREP=NREP+1
       IF(NREP.LT.NTRIES)  GO  TO  1994
       P0=P0OLD
-      XMIN=XMINO                         ! 17.05.2002      
+      XMIN=XMINO                         ! 17.05.2002
       IRET=1
       RETURN
 1994  CONTINUE
@@ -4785,7 +4783,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       NREP=NREP+1
       IF(NREP.LT.NTRIES)  GO  TO  1992
 2002  P0=P0OLD                                ! 17.05.2002
-      XMIN=XMINO                              ! 17.05.2002      
+      XMIN=XMINO                              ! 17.05.2002
       IRET=1
       RETURN
 1992  CONTINUE
@@ -6655,7 +6653,7 @@ C-----------------------------------------------C
       RETURN
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-c************** last correction 12-21-95 05:40pm************* 
+c************** last correction 12-21-95 05:40pm*************
 
 ! =====================================================================
 ! READHH removed by CMJ (XCP-3, LANL) on 09/08/2017, it is not called
@@ -6693,7 +6691,7 @@ C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE   BACKID(IDOLD,IDNEW)
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
       COMMON/ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
-C  
+C
       CHARACTER*8 PNAME,LAB
       DIMENSION PNAME(54)
       DATA PNAME/
@@ -6801,7 +6799,6 @@ C          QUARK-BASED IDENT CODE
       DIMENSION AMMES0(10),AMMES1(10),AMBAR0(30),AMBAR1(30)
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/QLMASS/ AMLEP(52),NQLEP,NMES,NBARY
-      COMMON/ISOB3/ISOB3
 C          0- MESON MASS TABLE
       DATA AMMES0/.13496,.13957,.5488,.49367,.49767,.9576,1.8633
      1,1.8683,2.030,2.976/
@@ -6887,7 +6884,7 @@ C          BARYONS
       INDEX=INDEX-109*JSPIN-36*NMES-NQLEP
       INDEX=INDEX-11
       AMASS=(1-JSPIN)*AMBAR0(INDEX)+JSPIN*AMBAR1(INDEX)
-      IF(ISOB3.NE.1)  RETURN
+      IF(ISOB3 /= 1)  RETURN
       IF(ID.EQ.1111.OR.ID.EQ.1121.OR.ID.EQ.2221.OR.ID.EQ.1221)
      *GO  TO  1991
       RETURN
@@ -10793,7 +10790,7 @@ C
 C  SIGMA    =CROSS SETION SUMMED OVER TYPES ALLOWED BY GH1H2
 C  SIGS(I)  =PARTIAL CROSS SECTION FOR DUAL TYPE DIAGRAM
 C
-C     
+C
       CHARACTER*8 LAB1,LAB2
       LOGICAL GH1H2
       LOGICAL GH
