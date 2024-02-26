@@ -8,6 +8,8 @@
 
 module standaloneGSM
 
+  use Contracts
+#include "../Utilities/Contract/contract_macros.fpp"
   implicit none
   private
 
@@ -22,10 +24,10 @@ module standaloneGSM
 contains
 
   ! Main routine to access:
-  include "gsmDriver.f90"   ! Interfaces to the "readInput" procedure
-  include "parseCommands.f90"
-  include "validateCommands.f90"
-  include "printHelp.f90"
-  include "readInput.f90"
+#include "gsmDriver.f90"
+#include "parseCommands.f90"
+#include "validateCommands.f90"
+#include "printHelp.f90"
+#include "readInput.f90"
 
 end module standaloneGSM
