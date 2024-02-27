@@ -43,20 +43,6 @@
   end type mDCMProgeny
 
 
-  ! NOTE: This will replace the "resultLAQ" common block
-  type, public :: mDCMResidual
-     private
-     real(real64), public :: numBaryons = 0.0_real64
-     real(real64), public :: numProtons = 0.0_real64
-     real(real64), public :: kinEnergy  = 0.0_real64   ! Kinetic energy of fragment [GeV]
-     real(real64), public, dimension(3) :: linearMom  = 0.0_real64
-     real(real64), public, dimension(3) :: angularMom = 0.0_real64
-  contains
-     private
-     ! angular momentum modifer
-  end type mDCMResidual
-
-
   ! Review "holpt" common block - this may need incorporated here or a similar
   ! object
   type, public :: mDCMExciton
