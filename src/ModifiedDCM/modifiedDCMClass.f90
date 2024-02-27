@@ -8,6 +8,8 @@
 module modifiedDCMClass
 
   use, intrinsic:: iso_fortran_env, only: int32, real64
+  use numbers
+  use mDCMChildTypes
   implicit none
   private
 
@@ -121,7 +123,7 @@ contains
   include "new_ModifiedDCM.f90"
   include "new_Results.f90"
 
-  ! Querying the object:
+  ! Querying the objects:
   include "mDCMAccess.f90"
 
   ! For reaction setup:
