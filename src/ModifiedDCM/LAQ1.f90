@@ -6375,6 +6375,7 @@
   subroutine recul(nu,px,py,pz,x,y,z)
 
     use, intrinsic:: iso_fortran_env, only: int32, real64
+    use Contracts, only: not_implemented
 
 !    implicit none
     implicit real(real64) (a-h,o-z), integer(int32) (i-n)
@@ -6384,21 +6385,24 @@
 !
     common/resultlaq/an1,an2,zn1,zn2,enext1,enext2,pnucl1(3), &
          & pnucl2(3),amnuc1(3),amnuc2(3)
-    if(nu-1) 10,10,11
-10  pnucl1(1)=pnucl1(1)+px
-    pnucl1(2)=pnucl1(2)+py
-    pnucl1(3)=pnucl1(3)+pz
-    amnuc1(1)=amnuc1(1)+z*py-y*pz
-    amnuc1(2)=amnuc1(2)+x*pz-z*px
-    amnuc1(3)=amnuc1(3)+y*px-x*py
-    go to 12
-11  pnucl2(1)=pnucl2(1)+px
-    pnucl2(2)=pnucl2(2)+py
-    pnucl2(3)=pnucl2(3)+pz
-    amnuc2(1)=amnuc2(1)+z*py-y*pz
-    amnuc2(2)=amnuc2(2)+x*pz-z*px
-    amnuc2(3)=amnuc2(3)+y*px-x*py
-12  continue
+    select case (nu)
+       case ( 1 );
+           pnucl1(1) = pnucl1(1) + px
+           pnucl1(2) = pnucl1(2) + py
+           pnucl1(3) = pnucl1(3) + pz
+           amnuc1(1) = amnuc1(1) + z * py - y * pz
+           amnuc1(2) = amnuc1(2) + x * pz - z * px
+           amnuc1(3) = amnuc1(3) + y * px - x * py
+       case ( 2 );
+           pnucl2(1) = pnucl2(1) + px
+           pnucl2(2) = pnucl2(2) + py
+           pnucl2(3) = pnucl2(3) + pz
+           amnuc2(1) = amnuc2(1) + z * py - y * pz
+           amnuc2(2) = amnuc2(2) + x * pz - z * px
+           amnuc2(3) = amnuc2(3) + y * px - x * py
+       case default;
+           call not_implemented("Momentum transfer", __FILE__, __LINE__)
+    end select
     return
   end
 ! * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

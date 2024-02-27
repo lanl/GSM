@@ -20,6 +20,9 @@
     implicit real(real64) (a-h,o-z), integer(int32) (i-n)
     type(mDCMResults), intent(inout) :: results
 
+    ! Fragment kinetic energy
+    real(real64) :: tfr1 = 0.0_real64, tfr2 = 0.0_real64
+
     real(real64) ::  masn
     common/ncasca/ncas,ncpri
     common/tprod/tprod(5999)
@@ -34,6 +37,8 @@
          & /center/xc(2,300),yc(2,300),zc(2,300),iz(2,300)
     common/memorylaq/pmemo(9,5999),imemo(5,5999)
     common/activ/mpa(300),myp(5999),myt(5999),myy(5999)
+    ! This is the hole momentum, position, and excitation/kinetic energy for
+    ! proj/targ. Should review physics more, but this is important!
     common /holpt/ ph1(3),ph2(3),rh1(3),rh2(3),ehol1,ehol2,tfp,tft
     common/nucsp/vpr(3),vta(3),radp(3),radt(3),vev(3),vre(3),gev,gre &
          & ,vep(3),vet(3),gep,get
@@ -247,6 +252,7 @@
     common/nucsp/vpr(3),vta(3),radp(3),radt(3),vev(3),vre(3),gev,gre &
          & ,vep(3),vet(3),gep,get
     common /rint/ rint
+    ! tf* is kinetic energy of proj/target;
     common /holpt/ ph1(3),ph2(3),rh1(3),rh2(3),ehol1,ehol2,tfp,tft
     common /idpme/ idpme(5999)
     common /sori/ sori(5999),ssor
