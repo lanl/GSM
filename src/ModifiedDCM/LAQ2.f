@@ -757,7 +757,7 @@ C----  FOR MESON-MESON COLLISION
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE ANG(TFOR,TBACK,T,Z,PHI)
-      use modifiedDCMParams, only: pi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C   ANG CALCULATES (RANDOMLY) THE POLAR AND AZIMUTHAL SCATTERING ANGLES
@@ -794,15 +794,15 @@ C
       IF(Z.LT.-1.0) Z=-1.0
       IF(Z.GT.1.0) Z=1.0
       R4=RNDM(-1.)
-      PHI=2.0*PI*R4
+      PHI=twpi*R4
       RETURN
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE ELZPLE(IK1,IK2,TKIN,Z,PHI,IEXE)
-      use modifiedDCMParams, only: pi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       IF(IEXE.EQ.0) GO TO 1
        Z=COSP(TKIN,12)
        RETURN
@@ -1476,7 +1476,7 @@ C  SIMULATION OF Z DISTRIBUTION FROM U(Z)=1.-CX2+3.*CX2*(1.-Z)**2
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CLUSLE(IFL1,IFL2,KSD,AMCTR)
-      use modifiedDCMParams, only: pi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS CLUSTER BREAKING
@@ -1556,7 +1556,7 @@ C     PROB=2.*PA/AMCTR
 C   PROB IS TWO-BODY PHASE SPACE FACTOR
 C     IF(RNDM(-1.).GT.PROB) GO TO 100
       U(3)=2.*RNDM(-1.)-1.
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       ST=SQRT(1.-U(3)**2)
       U(1)=ST*COS(PHI)
       U(2)=ST*SIN(PHI)
@@ -1594,13 +1594,13 @@ C   GENERATE DISTRIBUTION WITH 1/(1+B*PT**2)**4
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE PTDGET(PX,PY,SIGMA)
-      use modifiedDCMParams, only: pi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C   GENERATE DISTRIBUTION WITH 1/(1+B*PT**2)**4
       DATA CON1/1.697652726/,CON2/-.3333333333/
       PT0=CON1*SIGMA*SQRT(RNDM(-1.)**CON2-1.)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX=PT0*COS(PHI)
       PY=PT0*SIN(PHI)
       RETURN
@@ -1945,7 +1945,7 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CYLLE(IK1,IB1,AM1,IK2,IB2,AM2,P1,IBINA)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C  CALCULATION OF CYLINDRICAL GRAPH
@@ -2030,14 +2030,14 @@ C  MOMENTUM OF QUARKS
       PZ33=-P1(3)*X3
       PZ44=-P1(3)*X4
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   160 CALL GETPT(PT1,SIGMAI)
       AMQ21=AZ12*(AZ12+4.*X1*X2*PZER2)/(4.*(PZER2+AZ12))-PT1**2
       PX11=PT1*COS(PHI)
       PY11=PT1*SIN(PHI)
       PX22=-PX11
       PY22=-PY11
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   170 CALL GETPT(PT3,SIGMAI)
       AMQ22=AZ22*(AZ22+4.*X3*X4*PZER2)/(4.*(PZER2+AZ22))-PT3**2
       PX33=PT3*COS(PHI)
@@ -2167,7 +2167,7 @@ C  RETURN IN OVERALL CM FRAME
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE UNCYLE(IK1,IB1,AM1,IK2,IB2,AM2,P1,IBINA)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE UNDEVELOPED CYLINDER DIAGRAM
@@ -2233,14 +2233,14 @@ C    COMPUTE X VALUES FOR PARTONS
       X33=XDIST(XMIN,IB2,IS2,IFL33S)
       X44=1.-X33
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   160 CALL GETPT(PT11,SIGMAI)
       AMQ21=AZ12*(AZ12+4.*X11*X22*PZER2)/(4.*(PZER2+AZ12))-PT11**2
       PX11=PT11*COS(PHI)
       PY11=PT11*SIN(PHI)
       PX22=-PX11
       PY22=-PY11
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   170 CALL GETPT(PT33,SIGMAI)
       AMQ22=AZ22*(AZ22+4.*X33*X44*PZER2)/(4.*(PZER2+AZ22))-PT33**2
       PX33=PT33*COS(PHI)
@@ -2434,7 +2434,7 @@ C    COMPUTE PT VALUES FOR PARTONS
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFSCA(IFL01,IFL02,KS01,IK1,AM1,
      *IFL03,IFL04,KS02,IK2,AM2,P1,IBINA)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -2513,11 +2513,11 @@ C    COMPUTE X VALUES FOR PARTONS
 C     COMPUTE PT VALUE FOR HADRON
 140   CONTINUE
       CALL GETPT(PT1,SIGMA2)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX1=PT1*COS(PHI)
       PY1=PT1*SIN(PHI)
       CALL GETEXP(PT,SIGMA1)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTX=PT*COS(PHI)
       PTY=PT*SIN(PHI)
       PX2=-PX1+PTX
@@ -2925,7 +2925,7 @@ C  CALCULATION OF RESONANCE CROSS SECTION
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION WIDTLE(GAM)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -2935,7 +2935,7 @@ C
 100   DRND=RNDM(-1.)
       IF(DRND.LT.1.0D-10)      GO TO 100
       GT=SIGMA*SQRT(-LOG(DRND))
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       WIDTLE=GT*COS(PHI)
       IF(ABS(WIDTLE).GT.GAM) GO TO 100
       RETURN
@@ -3116,7 +3116,7 @@ C
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFTLE(IFL01,IFL02,KS01,IK1,AM1,
      *                  IFL03,IFL04,KS02,IK2,AM2,P1,IBINA)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE TRIPLE POMERON VERTEX DIFFRACTION
@@ -3206,7 +3206,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS=XSEE(XMINS)
 C    COMPUTE PT VALUE FOR HADRON
       CALL GETPT(PTH,SIGMA)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX=PTH*COS(PHI)
       PTHY=PTH*SIN(PHI)
       PS=XS*P0
@@ -4075,7 +4075,7 @@ C LORENTZ BOOST OF COORDINATES & TIMES
       END
 c   ********************************************************
       SUBROUTINE DIFSMA(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE LOW MASS DIFFRACTION
@@ -4161,11 +4161,11 @@ c   **********************************
       IRET=1
       go  to  2001
 102   CONTINUE
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX2=PT2*COS(PHI)
       PY2=PT2*SIN(PHI)
       CALL GAUSPT(PT,SIGMAD)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTX=PT*COS(PHI)
       PTY=PT*SIN(PHI)
       PX1=-PX2+PTX
@@ -4297,7 +4297,7 @@ C     IF(AMDTR.GE.3.3) GO TO 160
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFTRI(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE TRIPLE POMERON VERTEX DIFFRACTION
@@ -4388,7 +4388,7 @@ C    COMPUTE PT VALUE FOR HADRON
 C      PRINT *, 'TO GAUSPT'
       CALL GAUSPT(PTH,SIGMAN)
 C      PRINT  *, 'FROM GAUSPT'
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX=PTH*COS(PHI)
       PTHY=PTH*SIN(PHI)
       PS=XS*P0
@@ -4665,7 +4665,7 @@ C-----------------------------------------------------------------------
       END
 C***********************************************************************
       SUBROUTINE DOUBLO(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE ENHANCEMENT (LOOP)-POMERONS DIFFRACTION
@@ -4740,7 +4740,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS3=1.-XS1
 C    COMPUTE PT VALUE
       CALL GAUSPT(PTH,SIGMAN)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX=PTH*COS(PHI)
       PTHY=PTH*SIN(PHI)
       XMINS2=(PARBE+AMB)**2/SCM
@@ -4944,7 +4944,7 @@ C     WRITE(ITLIS,1000) SCM,NPTCL
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DOUBY(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE DOUBLE ENHANCEMENT (Y)-POMERONS DIFFRACTION
@@ -5019,7 +5019,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS12=XS1-XS11
 C    COMPUTE PT VALUE
       CALL GAUSPT(PTH,SIGMAN)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX1=PTH*COS(PHI)
       PTHY1=PTH*SIN(PHI)
       PTHX11=PTHX1*RNDM(-1.)
@@ -5036,7 +5036,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS22=XS2-XS21
 C    COMPUTE PT VALUE
       CALL GAUSPT(PTH,SIGMAN)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX2=PTH*COS(PHI)
       PTHY2=PTH*SIN(PHI)
       PTHX21=PTHX2*RNDM(-1.)
@@ -5153,7 +5153,7 @@ C
       END
 C***********************************************************************
       SUBROUTINE DOUBSM(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE DOUBLE SMALL MASS DIFFRACTION
@@ -5231,16 +5231,16 @@ C COMPUTE PT VALUE FOR HADRON
       IRET=1
       go  to  2001
 1994  CONTINUE
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTXH=PTH*COS(PHI)
       PTYH=PTH*SIN(PHI)
 C    COMPUTE PT VALUE
       CALL GAUSPT(PT1,SIGMA)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX1=PT1*COS(PHI)
       PY1=PT1*SIN(PHI)
       CALL GAUSPT(PT2,SIGMA)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX2=PT2*COS(PHI)
       PY2=PT2*SIN(PHI)
       PX1H=PTXH-PX1
@@ -5810,7 +5810,7 @@ C         ANNIHILATION CASE:
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE REGTRI(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE TRIPLE REGGEON DIAGRAM
@@ -5879,7 +5879,7 @@ C   COMPUTE X VALUES FOR PARTONS
       X1=XDIST(XMIN,IBA,ISA,IFL01S)
       X2=1.-X1
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMA**2
       PZER2=P0**2
@@ -5888,7 +5888,7 @@ C    COMPUTE PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMB**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -6088,7 +6088,7 @@ C     WRITE(ITLIS,1000) SCM
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE UNCYLI(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE UNDEVELOPED CYLINDER DIAGRAM
@@ -6158,7 +6158,7 @@ C   COMPUTE X VALUES FOR PARTONS
       X1=XDIST(XMIN,IBA,ISA,IFL01S)
       X2=1.-X1
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMA**2
       PZER2=P0**2
@@ -6167,7 +6167,7 @@ C    COMPUTE PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMB**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -6399,7 +6399,7 @@ C     WRITE(ITLIS,1000) SCM
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CYLIN(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE CYLINDER TYPE DIAGRAM
@@ -6464,7 +6464,7 @@ C   COMPUTE X VALUES FOR PARTONS
       X4=1.-X3
       IF(IBA.EQ.0.AND.IBB.EQ.0) NRET=0
 C   COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMA**2
       PZER2=P0**2
@@ -6473,7 +6473,7 @@ C   COMPUTE PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMB**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -7154,7 +7154,7 @@ c      write(16,*) 'ID,ISUM,CHARGE=', ID,ISUM,CHARGE
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DECAYQ(IP,IPOINT)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
       integer*4 :: NJSET,JORIG(100),JTYPE(100),
      &     JDCAY(100)
@@ -7283,7 +7283,7 @@ C          CARRY OUT TWO-BODY DECAYS IN PGEN FRAMES
       DO 410 I=1,NADD1
       QCM=DBLPCM(PGEN(5,I),PGEN(5,I+1),PPTCL(5,NPTCL+I))
       U(3)=2.*RNDM(-1.)-1.
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       U(1)=SQRT(1.-U(3)**2)*COS(PHI)
       U(2)=SQRT(1.-U(3)**2)*SIN(PHI)
       DO 420 J=1,3
@@ -7587,7 +7587,7 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CLUSTR(IFL1,IFL2,AMCTR)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS CLUSTER BREAKING
@@ -7681,7 +7681,7 @@ C   PROB IS TWO-BODY PHASE SPACE FACTOR
 C      DRND=RNDM(-1.)
 C      IF(DRND.GT.PROB) GO TO 100
       U(3)=COSDD(0)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       ST=SQRT(1.-U(3)**2)
       U(1)=ST*COS(PHI)
       U(2)=ST*SIN(PHI)
@@ -7771,7 +7771,7 @@ C  CONSTRUCT BARYON IDENT
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE STRING(IFL1,IFL2,AMSTR)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS STRING BREAKING
@@ -7901,7 +7901,7 @@ C DIQUARK BREAK
 C  LEADING QUARK TRANSFERSE MOMENTUM
 C     CALL PTDGET(PXL,PYL,SIGQTS)
       CALL GAUSPT(PTL0,SIGQTS)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PXL=PTL0*COS(PHI)
       PYL=PTL0*SIN(PHI)
       PX1L(JSIDE)=PX1(JSIDE)
@@ -7924,7 +7924,7 @@ C  IDENT,MASS AND TRANSFERSE MOMENTUM OF PARTICLE
       PPTCL(5,I)=AMASS(IDENT(I))
 C     CALL PTDGET(PX2,PY2,SIGQTS)
       CALL GAUSPT(PT2,SIGQTS)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX2=PT2*COS(PHI)
       PY2=PT2*SIN(PHI)
       PPTCL(1,I)=PX1(JSIDE)+PX2
@@ -9945,7 +9945,7 @@ C   @@@@@@@@@@@@@@@@@@
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE TWOSHE(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C       COMPUTE TWO SHEETS ANNIHILATION DIAGRAM
@@ -10036,7 +10036,7 @@ C    COMPUTE X VALUES FOR PARTONS
       CALL X2DIST(X1,X2,IFL01,IFL02)
       CALL X2DIST(X3,X4,IFL03,IFL04)
 C     PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMB**2
       PZER2=P0**2
@@ -10045,7 +10045,7 @@ C     PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMA**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -10076,7 +10076,7 @@ C     PT VALUES FOR PARTONS
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE THREES(IRET)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE THREE SHEETS ANNIHILATION DIAGRAM
@@ -10166,9 +10166,9 @@ C    COMPUTE X VALUES FOR PARTONS
       IF(RES.LT.0.) GO TO 260
 C  COMPUTE PT VALUES FOR PARTONS
       CALL GAUSPT(PT11,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PT12,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PT11X=PT11*COS(PHI1)
       PT11Y=PT11*SIN(PHI1)
       PT12X=PT12*COS(PHI2)
@@ -10186,9 +10186,9 @@ C  COMPUTE X VALUES FOR PARTONS
       IF(RES.LT.0.) GO TO 261
 C  COMPUTE PT VALUES FOR PARTONS
       CALL GAUSPT(PT21,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PT22,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PT21X=PT21*COS(PHI1)
       PT21Y=PT21*SIN(PHI1)
       PT22X=PT22*COS(PHI2)
@@ -10368,7 +10368,7 @@ C  COMPUTE SCATTERING ANGLE
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION WIDTH(GAM)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -10376,7 +10376,7 @@ C   COMPUTE WIDTH OF PARTICLE
 C
 100   DRND=RNDM(-1.)
       GT=GAM*SQRT(-LOG(DRND))
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       WIDTH=GT*COS(PHI)
       IF(ABS(WIDTH).GT.GAM) GO TO 100
       RETURN
@@ -10614,10 +10614,10 @@ C     IF(IB1.EQ.-1.AND.IB2.NE.-1) B=11.0
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
         SUBROUTINE ELZPHI(IK1,IK2,TKIN,Z,PHI,IEXE)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       IF(IEXE.EQ.0) GO TO 1
        Z=COSP(TKIN,12)
        RETURN
@@ -10782,7 +10782,6 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE SIGIN
-      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C  COMPUTE DIAGRAM WEIGHTS FOR INELASTIC
@@ -11718,7 +11717,7 @@ C ONLY FOR STRANGE QUARK
        END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
        SUBROUTINE PTQUAR(KEY)
-      use modifiedDCMParams, only: pi, twpi
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C    COMPUTE PARTON TRANSFERSE MOMENTA
@@ -11774,9 +11773,9 @@ C        MOMENTA VALENCE AND SEA QUARKS
       IF(NPA.EQ.1) GO TO 5
       DO 4 JS=1,NS
       CALL GAUSPT(PTS1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PTS2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
        PXAS1(JS)=PTS1*COS(PHI1)
        PYAS1(JS)=PTS1*SIN(PHI1)
        PXAS2(JS)=PTS2*COS(PHI2)
@@ -11790,14 +11789,14 @@ C        MOMENTA VALENCE AND SEA QUARKS
       PTQXS0=PTQXS
       PTQYS0=PTQYS
 5     CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXAV1=PTV1*COS(PHI1)
       PYAV1=PTV1*SIN(PHI1)
       PXAV2=0.
       PYAV2=0.
       IF(.NOT.DIQAN) GO TO 15
       CALL GAUSPT(PTV2,SIGMDQ)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXAV2=PTV2*COS(PHI2)
       PYAV2=PTV2*SIN(PHI2)
  15   PTQXS=PTQXS0
@@ -11834,11 +11833,11 @@ C        MOMENTA VALENCE AND SEA QUARKS
 500   CONTINUE
       PBM2=P02+25.
       CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXAV1=PTV1*COS(PHI1)
       PYAV1=PTV1*SIN(PHI1)
       CALL GAUSPT(PTV2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXAV2=PTV2*COS(PHI2)
       PYAV2=PTV2*SIN(PHI2)
       PXAQQ=-(PXAV1+PXAV2)
@@ -11885,9 +11884,9 @@ C        MOMENTA VALENCE AND SEA QUARKS
       XI2(INUM-1)=XBSEA1(JS)**2
       XI2(INUM)=XBSEA2(JS)**2
       CALL GAUSPT(PTS1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PTS2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
        PXBS1(JS)=PTS1*COS(PHI1)
        PYBS1(JS)=PTS1*SIN(PHI1)
        PXBS2(JS)=PTS2*COS(PHI2)
@@ -11898,14 +11897,14 @@ C        MOMENTA VALENCE AND SEA QUARKS
       PTQXS0=PTQXS
       PTQYS0=PTQYS
  7    CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXBV1=PTV1*COS(PHI1)
       PYBV1=PTV1*SIN(PHI1)
       PXBV2=0.
       PYBV2=0.
       IF(.NOT.DIQAN) GO TO 35
       CALL GAUSPT(PTV2,SIGMDQ)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXBV2=PTV2*COS(PHI2)
       PYBV2=PTV2*SIN(PHI2)
  35   PTQXS=PTQXS0
@@ -11941,11 +11940,11 @@ C        MOMENTA VALENCE AND SEA QUARKS
       GO TO 9
 600   CONTINUE
       CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXBV1=PTV1*COS(PHI1)
       PYBV1=PTV1*SIN(PHI1)
       CALL GAUSPT(PTV2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXBV2=PTV2*COS(PHI2)
       PYBV2=PTV2*SIN(PHI2)
       PXBQQ=-(PXBV1+PXBV2)
