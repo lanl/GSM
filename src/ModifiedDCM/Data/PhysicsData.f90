@@ -139,6 +139,7 @@ contains
   include "initializeModifiedDCMData.f90"
   include "initam.f90"
   include "readPhotonData.f90"
+  include "readDecayData.f90"
 
   include "../printMDCM.f90"
 
