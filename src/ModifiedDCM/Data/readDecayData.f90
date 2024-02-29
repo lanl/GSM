@@ -31,7 +31,7 @@
 ! ====================================================================
 
     ! Parameters and unimportant temp values
-    integer(int32) :: i, ifl1, ifl2, ifl3, itype, jspin, k
+    integer(int32) :: i, ifl1, ifl2, ifl3, itype, jspin, k, suggestedLoop
     character(len=8) :: lread(10), lmode(6), lres
     integer(int32), parameter :: loopLimit = 600_int32
     character(len=*), parameter :: &
@@ -68,6 +68,11 @@
     if(.not. model_decay) return
     exitLoop = .false.
     loopExceeded = .false.
+
+    ! Default data values (do NOT default mappings, just in case)
+    look(:) = 0_int32
+    cbr(:) = one
+    mode(:, :) = 0_int32
 
     ! Check if file is already opened somewhere
     ! If so, rewind it / start at the front
@@ -160,12 +165,36 @@
              ! channel has a forced decay specified
              call flavor(iforce(i), ifl1, ifl2, ifl3, jspin, index)
 
-             ! Add particle ID lookup table and associated values
-             look(index) = loop
-             cbr(loop) = one   ! Should we override this, or would it be better to obtain this from cbr PRIOR to overwriting the lookup if it was set
-             do k = 1, 5
-                mode(k,loop) = mforce(k,i)
-             end do
+             ! TODO: Instead of growing the mapping tables and unassociating
+             ! potential CBR values, ought to obtain the existing mapping, if
+             ! one exists, and then override the mode values.
+             !
+             ! This would look like the following unreachable code
+             ! ("not_implemented" contract added for safety). This was not
+             ! implemented since it could not be easily tested and verified
+             ! against real data at the time of consideration
+             if (.false.) then
+                call not_implemented("Map restriction and CBR retention", &
+                   & __FILE__, &
+                   & __LINE__)
+                suggestedLoop = look(index)
+                if (suggestedLoop == 0) then
+                    ! ID is unmapped; create the mapping and associate a cbr value
+                   suggestedLoop = loop
+                   look(index) = suggestedLoop
+                   cbr(suggestedLoop) = one
+                end if
+                do k = 1, 5
+                   mode(k, suggestedLoop) = mforce(k, i)
+                end do
+             else
+                ! Add particle ID lookup table and associated values
+                look(index) = loop
+                cbr(loop) = one
+                do k = 1, 5
+                   mode(k,loop) = mforce(k,i)
+                end do
+             end if
           end if forcedExceeded
        end do forcedModes
     end if
