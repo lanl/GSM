@@ -9,6 +9,8 @@ module modifiedDCMData
 
   use, intrinsic:: iso_fortran_env, only: int32, real64
   use modifiedDCMParams, only: degreeToRad
+  use Contracts
+#include "../../Utilities/Contracts/contract_macros.fpp"
   implicit none
   private
 
@@ -136,12 +138,12 @@ contains
 
 ! ====================================================================
 
-  include "initializeModifiedDCMData.f90"
-  include "initam.f90"
-  include "readPhotonData.f90"
-  include "readDecayData.f90"
+#include "initializeModifiedDCMData.f90"
+#include "initam.f90"
+#include "readPhotonData.f90"
+#include "readDecayData.f90"
 
-  include "../printMDCM.f90"
+#include "../printMDCM.f90"
 
 ! ====================================================================
 
