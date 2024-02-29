@@ -32,9 +32,7 @@ module modifiedDCMParams
   real(real64), parameter ::  &
        & fscon         = 137.0393_real64,             & != Inverse fine-structure constant (dimensionless).
        & fscon_inv     = 137.035999679_real64,        & != Inverse fine-structure constant (dimensionless). PDG 2011.
-       & hbarc         = 197.327053_real64,           & != hbar * c or hbar/c?
-       & gf            = 0.0000116570_real64,         & != ?
-       & units         = one / 2.56815_real64           != ?
+       & hbarc         = 197.327053_real64              != hbar * c or hbar/c?
 
 
   ! Particle masses.
