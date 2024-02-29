@@ -3,45 +3,52 @@
 
 ! ====================================================================
 !
-!          THIS SUBROUTINE READS IN THE DECAY TABLE FROM TAPE ITDKY
-!          AND SETS UP /DKYTAB/.
-!          QUARK-BASED IDENT CODE
+! This subroutine reads in the decay table and establishes decay
+! data and mappings for the quark-based indent code.
 !
 ! ====================================================================
-
-    use, intrinsic:: iso_fortran_env, only: int32, real64, &
-        & output_unit, error_unit
 
     implicit none
     logical, intent(in   ), optional :: printStatusIN
 
-    logical :: printStatus = .false., &
+    logical :: printStatus = .false.
+
+    ! Values read from the data file
+    integer(int32) :: ires   ! CUrrent particle ID
+    real(real64)   :: br
+    integer(int32), dimension(6) :: imode
+
+    ! Interim variables
+    logical :: &
         &      exitLoop = .false., &
         &      loopExceeded = .false.
-    integer(int32) :: i, ifl1, ifl2, ifl3, index, iold, ires, itype, &
-         & jspin, k, loop
-    real(real64)   :: br
-    character(len=8) :: lread(10),lmode(6),lres
-
-    integer(int32), dimension(6) :: imode
+    integer(int32) :: &
+        & index, &   ! Particle index in lookup tables
+        & iold, &    ! Prior particle ID
+        & loop, &    ! Lookup index (also the loop number)
+        & rc         ! File I/O status
 
 ! ====================================================================
 
+    ! Parameters and unimportant temp values
+    integer(int32) :: i, ifl1, ifl2, ifl3, itype, jspin, k
+    character(len=8) :: lread(10), lmode(6), lres
     integer(int32), parameter :: loopLimit = 600_int32
     character(len=*), parameter :: &
-         & iquit = " end", &
+         & iquit  = " end", &
          & iblank = "     "
-     integer(int32) :: rc
-     character(:), allocatable :: message
 
 ! ====================================================================
 
 ! nforce, iforce, and mforce should be set as data options. Additionally, should
 ! limit nforce to 20; iforce/mforce could be simpler, default is 0 for all
-! values
+! values. Technically, the number of forced channels can be arbitrary.
     integer(int32) :: nforce, iforce, mforce
     common/force/nforce,iforce(20),mforce(5,20)
     ! LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
+    ! We should set these more dynamically; perhaps bigger than 600 and make
+    ! these allocatable? Further, we can restrict their use to ensure
+    ! indexes are in range of what's allocated
     integer(int32) :: look, mode
     real(real64)   :: cbr
     common/dkytab/look(400),cbr(600),mode(5,600)
@@ -117,18 +124,18 @@
                 ! NOTE: we can map the "cbr" or "mode" values using the particle
                 ! ID by obtaining the lookup value (to get the associated loop #),
                 ! then can obtain the cbr or mode lookup using the loop number.
-                call flavor(ires,ifl1,ifl2,ifl3,jspin,index)
-                look(index)=loop
+                call flavor(ires, ifl1, ifl2, ifl3, jspin, index)
+                look(index) = loop
              end if
-             iold=ires
+             iold = ires
 
              ! Assign specific data values associated to the particle
-             cbr(loop)=br
-             do i=1,5
-                mode(i,loop)=imode(i)
-                if(imode(i).ne.0) call label(lmode(i),imode(i))
+             cbr(loop) = br
+             do i = 1, 5
+                mode(i, loop) = imode(i)
+                if(imode(i) /= 0) call label(lmode(i), imode(i))
              end do
-             call label(lres,ires)
+             call label(lres, ires)
 
              ! Print status, if desired
              if (printStatus) then
@@ -139,41 +146,54 @@
           end if processdata
        end if exceeded
     end do primary
+
+    ! Set forced decay modes, if any specified
+    if(.not.loopExceeded .and. nforce > 0) then
+       forcedModes: do i = 1, nforce
+          loop = loop + 1_int32
+          forcedExceeded: if (loop > loopLimit) then
+             exitLoop = .true.
+             loopExceeded = .true.
+             exit forcedModes
+          else
+             ! Determine the particle index for the associated particle ID who's
+             ! channel has a forced decay specified
+             call flavor(iforce(i), ifl1, ifl2, ifl3, jspin, index)
+
+             ! Add particle ID lookup table and associated values
+             look(index) = loop
+             cbr(loop) = one   ! Should we override this, or would it be better to obtain this from cbr PRIOR to overwriting the lookup if it was set
+             do k = 1, 5
+                mode(k,loop) = mforce(k,i)
+             end do
+          end if forcedExceeded
+       end do forcedModes
+    end if
+
+    ! Read and print notes from the decay table file
+    if (.not.loopExceeded .and. printStatus) then
+        exitLoop = .false.
+        readNotes: do while (.not.exitLoop)
+           ! Read
+           read(decayUnit, 1002, iostat=rc) lread
+
+           ! If EOF, error, or last line, then exit
+           ! Otherwise, print the line back to the user
+           if (rc /= 0 .or. lread(1) == iquit) then
+               exitLoop = .true.
+           else
+              write(output_unit, 1003) lread
+           end if
+       end do readNotes
+    end if
+
     ! If loop limited was exceeded, then print error and close file
     if (loopExceeded) then
-        write(output_unit, 30)
-        close(decayUnit)
+        write(output_unit, 30) __FILE__, &
+            & "array size exceeded at ", &
+            & loopLimit
     end if
 
-
-!          SET FORCED DECAY MODES
-300 if(nforce > 0) then
-       do i=1,nforce
-          loop=loop+1
-          if(loop > 600) go to 9999
-          ! Based on "flavor" and iforce(:) = 0, this should return 0 for all
-          ! values.
-          call flavor(iforce(i),ifl1,ifl2,ifl3,jspin,index)
-          look(index)=loop
-          do k = 1,5
-             mode(k,loop)=mforce(k,i)
-          enddo
-          cbr(loop)=1.
-       enddo
-    end if
-
-!  READ AND PRINT NOTES FROM DECAYTABLE FILE
-400 if(printStatus) then
-410    read(decayUnit,1002,end=9998) lread
-       if(lread(1) == iquit) go to 9998
-       write(output_unit,1003) lread
-       go to 410
-    end if
-
-    close(decayUnit)
-9998 return
-
-9999 write(output_unit,30)
     close(decayUnit)
     return
 ! ====================================================================
@@ -183,7 +203,7 @@
          & 6x,4hpart,18x,10hdecay mode,19x,6hcum br,15x,5hident,17x, &
          & 11hdecay ident/)
 20  format(6x,a5,6x,5(a5,2x),3x,f8.5,15x,i5,4x,5(i5,2x))
-30  format(//44h ***** error in setdky ... loop.GT.600 *****)
+30  format(//44h, "***** Error in ", A, ": ", A, i0, "*****")
 1002   format(10a8)
 1003   format(1x,10a8)
 ! ====================================================================

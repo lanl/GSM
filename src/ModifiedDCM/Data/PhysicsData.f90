@@ -7,8 +7,8 @@
 
 module modifiedDCMData
 
-  use, intrinsic:: iso_fortran_env, only: int32, real64
-  use modifiedDCMParams, only: degreeToRad
+  use, intrinsic:: iso_fortran_env, only: int32, real64, output_unit
+  use modifiedDCMParams, only: one, degreeToRad
   use Contracts
   implicit none
   private
