@@ -25,7 +25,10 @@
 ! ivalon
 ! wtime
 ! iorhei
+! NODCAY block
 
+    LOGICAL NODCAY,NOETA,NOPI0,NOKA0
+    COMMON/NODCAY/NODCAY,NOETA,NOPI0,NOKA0
 ! enbou appears to be related to a Coulomb barrier possibly; should
 ! be made a simulation option and better described.
     real(real64) :: enbou
@@ -50,6 +53,11 @@
     common/iorhei/ iorhei
 
 ! ====================================================================
+
+    nodcay = .not.model_decay
+    noeta = .false.
+    nopi0 = .true.
+    noka0 = .true.
 
     yesela=.false.
     keyhh=.false.
