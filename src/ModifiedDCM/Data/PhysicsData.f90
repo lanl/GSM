@@ -10,7 +10,6 @@ module modifiedDCMData
   use, intrinsic:: iso_fortran_env, only: int32, real64
   use modifiedDCMParams, only: degreeToRad
   use Contracts
-#include "../../Utilities/Contracts/contract_macros.fpp"
   implicit none
   private
 

@@ -15,7 +15,9 @@
     implicit none
     logical, intent(in   ), optional :: printStatusIN
 
-    logical :: printStatus = .FALSE.
+    logical :: printStatus = .false., &
+        &      exitLoop = .false., &
+        &      loopExceeded = .false.
     integer(int32) :: i, ifl1, ifl2, ifl3, index, iold, ires, itype, &
          & jspin, k, loop
     real(real64)   :: br
@@ -25,10 +27,12 @@
 
 ! ====================================================================
 
+    integer(int32), parameter :: loopLimit = 600_int32
     character(len=*), parameter :: &
          & iquit = " end", &
          & iblank = "     "
      integer(int32) :: rc
+     character(:), allocatable :: message
 
 ! ====================================================================
 
@@ -44,66 +48,104 @@
 
 ! ====================================================================
 
+    ! Parameter validation
     if(present(printStatusIN)) then
        printStatus = printStatusIN
     end if
     if(printStatus) write(output_unit,10)
+
+    ! Setup preliminary values
     loop=0
     iold=0
-    do i = 1, 400
-       look(i) = 0
-    enddo
+    look(:) = 0
     if(.not. model_decay) return
-    rewind decayUnit
+    exitLoop = .false.
+    loopExceeded = .false.
 
-200 loop=loop+1
-    if(loop > 600) go to 9999
-! 220 continue
-    do i = 1,5
-       imode(i)=0
-       lmode(i)=iblank
-    enddo
-
-! Reading file ITDKY
-    ! (check if file associated with an open unit)
-    ! (NOTE: decayUnit == -1 if file NOT opened)
+    ! Check if file is already opened somewhere
+    ! If so, rewind it / start at the front
     inquire(file = effectiveDecayFile, &
-         & number = decayUnit)
+        & number = decayUnit)
+    if (decayUnit /= -1_int32) rewind decayUnit
 
-    ! Open file (not connected to any other unit)
-    if (decayUnit == -1_int32) &
-         & open(newunit = decayUnit, &
-         & file = effectiveDecayFile, &
-         & status = "old", action = "read", iostat = rc)
-     if (rc /= 0) then
-         write(error_unit, "(A)") "Error: Failed to open file " // &
-             & effectiveDecayFile
-         stop
-     end if
+    ! Start main reading loop
+    primary: do while (.not. exitLoop)
+       ! Increment loop and check if limit exceeded
+       loop = loop + 1_int32
+       exceeded: if (loop > loopLimit) then
+          exitLoop = .true.
+          loopExceeded = .true.
+       else
+! 220       continue
+          ! Reset temporary variables
+          imode(:) = 0_int32
+          lmode(:) = iblank
 
-    read(decayUnit, *, iostat = rc, end = 300) ires,itype,br,(imode(i),i=1,5)
-    if (rc /= 0) then
-        write(error_unit, "(A)") "Error: Failed to read file " // &
-            & effectiveDecayFile
-        stop
+          ! Open file if it's not already opened
+          inquire(file = effectiveDecayFile, &
+             & number = decayUnit)
+          if (decayUnit == -1_int32) then
+             open(newunit = decayUnit, &
+                & file = effectiveDecayFile, &
+                & status = "old", action = "read", iostat = rc)
+             call insist(rc == 0, &
+                & "Failed to open file: " // effectiveDecayFile, &
+                & __FILE__, &
+                & __LINE__)
+          end if
+
+          ! Read file
+          read(decayUnit, *, iostat = rc) &
+             & ires, itype, br, (imode(i), i = 1, 5)
+          call insist(rc <= 0, &
+             & "A failure occurred when reading from decay data file: " // effectiveDecayFIle, &
+             & __FILE__, &
+             & __LINE__)
+
+          processdata: if (ires == 0 .or. rc < 0) then
+             ! Reached end of file; exit loop
+             exitLoop = .true.
+          else
+             ! "ires" here is the particle ID associated to the decay channel
+             ! IF(NOPI0.AND.IRES.EQ.110) GO TO 220
+             ! IF(NOETA.AND.IRES.EQ.220) GO TO 220
+
+             ! Assign a lookup number for a unique particle
+             if(ires /= iold) then
+                ! Get particle properties and associated index
+                ! Assign into the lookup array [look]
+                ! NOTE: we can map the "cbr" or "mode" values using the particle
+                ! ID by obtaining the lookup value (to get the associated loop #),
+                ! then can obtain the cbr or mode lookup using the loop number.
+                call flavor(ires,ifl1,ifl2,ifl3,jspin,index)
+                look(index)=loop
+             end if
+             iold=ires
+
+             ! Assign specific data values associated to the particle
+             cbr(loop)=br
+             do i=1,5
+                mode(i,loop)=imode(i)
+                if(imode(i).ne.0) call label(lmode(i),imode(i))
+             end do
+             call label(lres,ires)
+
+             ! Print status, if desired
+             if (printStatus) then
+                write(output_unit,20) &
+                    & lres, (lmode(k), k = 1, 5), &
+                    & br, ires, (imode(k), k = 1, 5)
+             end if
+          end if processdata
+       end if exceeded
+    end do primary
+    ! If loop limited was exceeded, then print error and close file
+    if (loopExceeded) then
+        write(output_unit, 30)
+        close(decayUnit)
     end if
 
-    if(ires == 0) go to 300
-!     IF(NOPI0.AND.IRES.EQ.110) GO TO 220
-!     IF(NOETA.AND.IRES.EQ.220) GO TO 220
-    if(ires == iold) go to 230
-    call flavor(ires,ifl1,ifl2,ifl3,jspin,index)
-    look(index)=loop
-230 iold=ires
-    cbr(loop)=br
-    do i=1,5
-       mode(i,loop)=imode(i)
-       if(imode(i).ne.0) call label(lmode(i),imode(i))
-    enddo
-    call label(lres,ires)
-    if(printStatus) write(output_unit,20) lres,(lmode(k),k=1,5), &
-         & br,ires,(imode(k),k=1,5)
-    go to 200
+
 !          SET FORCED DECAY MODES
 300 if(nforce > 0) then
        do i=1,nforce
