@@ -13,6 +13,19 @@
     logical :: lprnt
 
 ! ====================================================================
+! Simulation varibles (may change w/ simulation)
+! enbou
+! yesela
+! keypla
+! qsee, qvsee
+
+! Simulation OPTIONS (static, but can be configured
+! keyhh
+! inside
+! icms
+! ivalon
+! wtime
+! iorhei
 
 ! enbou appears to be related to a Coulomb barrier possibly; should
 ! be made a simulation option and better described.
