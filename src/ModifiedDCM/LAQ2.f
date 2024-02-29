@@ -757,6 +757,7 @@ C----  FOR MESON-MESON COLLISION
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE ANG(TFOR,TBACK,T,Z,PHI)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C   ANG CALCULATES (RANDOMLY) THE POLAR AND AZIMUTHAL SCATTERING ANGLES
@@ -770,7 +771,6 @@ C
       COMMON /COMKI2/ELA,ELB,PLALB
       COMMON /CALC/HA,HB,HA2,HB2
       COMMON /BEES/B,BFOR
-      COMMON /CONST/ PI,SQRT2,ALF
       S=W**2
       EA=(S+HA2-HB2)/(2.0*W)
       EB=(S+HB2-HA2)/(2.0*W)
@@ -799,9 +799,9 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE ELZPLE(IK1,IK2,TKIN,Z,PHI,IEXE)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-      COMMON /CONST/ PI,SQRT2,ALF
       PHI=2.*PI*RNDM(-1.)
       IF(IEXE.EQ.0) GO TO 1
        Z=COSP(TKIN,12)
@@ -1476,6 +1476,7 @@ C  SIMULATION OF Z DISTRIBUTION FROM U(Z)=1.-CX2+3.*CX2*(1.-Z)**2
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CLUSLE(IFL1,IFL2,KSD,AMCTR)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS CLUSTER BREAKING
@@ -1488,7 +1489,6 @@ C  AMCTR IS MASS OF CLUSTER
       LOGICAL IPRINT
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
-      COMMON /CONST/ PI,SQRT2,ALF
       COMMON /PRODMA/ PPMAS(50)
       DIMENSION IFL(2),U(3)
       DOUBLE PRECISION PCM,A,B,C
@@ -1594,9 +1594,9 @@ C   GENERATE DISTRIBUTION WITH 1/(1+B*PT**2)**4
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE PTDGET(PX,PY,SIGMA)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-      COMMON/CONST/ PI,SQRT2,ALF
 C   GENERATE DISTRIBUTION WITH 1/(1+B*PT**2)**4
       DATA CON1/1.697652726/,CON2/-.3333333333/
       PT0=CON1*SIGMA*SQRT(RNDM(-1.)**CON2-1.)
@@ -1945,6 +1945,7 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CYLLE(IK1,IB1,AM1,IK2,IB2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C  CALCULATION OF CYLINDRICAL GRAPH
@@ -1955,7 +1956,6 @@ C
       COMMON /PRODT/ IORD(50)
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
-      COMMON /CONST/ PI,SQRT2,ALF
       COMMON /COMCUT/ PARM,PARB,SWMAX
       COMMON /COLRET/ LRET
       DIMENSION P1(3),NIN(2),NFIN(2),VS1(3),VS2(3)
@@ -2167,6 +2167,7 @@ C  RETURN IN OVERALL CM FRAME
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE UNCYLE(IK1,IB1,AM1,IK2,IB2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE UNDEVELOPED CYLINDER DIAGRAM
@@ -2179,7 +2180,6 @@ C
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /COMCUT/ PARM,PARB,SWMAX
       COMMON /COLRET/ LRET
-      COMMON /CONST/ PI,SQRT2,ALF
       COMMON /PRODMA/ PPMAS(50)
       DIMENSION V(3),P1(3)
       DIMENSION NIN(2),NFIN(2)
@@ -2434,6 +2434,7 @@ C    COMPUTE PT VALUES FOR PARTONS
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFSCA(IFL01,IFL02,KS01,IK1,AM1,
      *IFL03,IFL04,KS02,IK2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -2448,7 +2449,6 @@ C
       COMMON /COMLD/ PLDER(50)
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
       COMMON /COMCUT/ PARM,PARB,SWMAX
-      COMMON /CONST/ PI,SQRT2,ALF
       DIMENSION V(3),P1(3)
       DIMENSION PPX1(3),PPX2(3),PRX1(3),PRX2(3)
       DIMENSION GAMA(3),AMR(3)
@@ -2925,12 +2925,12 @@ C  CALCULATION OF RESONANCE CROSS SECTION
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION WIDTLE(GAM)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
 C   COMPUTE WIDTH OF PARTICLE
 C
-      COMMON /CONST/ PI,SQRT2,ALF
       SIGMA=GAM
 100   DRND=RNDM(-1.)
       IF(DRND.LT.1.0D-10)      GO TO 100
@@ -2958,9 +2958,9 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
         SUBROUTINE XDIST2(X1,X2)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-        COMMON /CONST/ PI,SQRT2,ALF
 C         U(X)=1./SQRT(X1*X2)*DELTA(1.-X1-X2)
           X1=0.5+0.5*SIN(PI*(RNDM(-1.)-0.5))
           X2=1.-X1
@@ -3116,6 +3116,7 @@ C
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFTLE(IFL01,IFL02,KS01,IK1,AM1,
      *                  IFL03,IFL04,KS02,IK2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE TRIPLE POMERON VERTEX DIFFRACTION
@@ -3123,7 +3124,6 @@ C
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       LOGICAL RETU
       COMMON /ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
-      COMMON /CONST/ PI,SQRT2,ALF
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /PRODT/ IORD(50)
@@ -4075,13 +4075,13 @@ C LORENTZ BOOST OF COORDINATES & TIMES
       END
 c   ********************************************************
       SUBROUTINE DIFSMA(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE LOW MASS DIFFRACTION
 C
       COMMON/ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/COMLID/PLIDER(499)
-      COMMON/CONST/ PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -4297,11 +4297,11 @@ C     IF(AMDTR.GE.3.3) GO TO 160
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFTRI(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE TRIPLE POMERON VERTEX DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF
       COMMON/COMLID/PLIDER(499)
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -4665,11 +4665,11 @@ C-----------------------------------------------------------------------
       END
 C***********************************************************************
       SUBROUTINE DOUBLO(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE ENHANCEMENT (LOOP)-POMERONS DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -4944,11 +4944,11 @@ C     WRITE(ITLIS,1000) SCM,NPTCL
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DOUBY(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE DOUBLE ENHANCEMENT (Y)-POMERONS DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/COMLID/PLIDER(499)
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -5153,11 +5153,11 @@ C
       END
 C***********************************************************************
       SUBROUTINE DOUBSM(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE DOUBLE SMALL MASS DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF
       COMMON/PRIMAR/ SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -5810,6 +5810,7 @@ C         ANNIHILATION CASE:
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE REGTRI(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE TRIPLE REGGEON DIAGRAM
@@ -5817,7 +5818,6 @@ C
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/COMLID/PLIDER(499)
       COMMON /PARCUT/ SWMAX
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/COMXM/ XMIN,XMAX
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -6088,6 +6088,7 @@ C     WRITE(ITLIS,1000) SCM
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE UNCYLI(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE UNDEVELOPED CYLINDER DIAGRAM
@@ -6095,7 +6096,6 @@ C
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/COMLID/PLIDER(499)
       COMMON /PARCUT/ SWMAX
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/COMXM/ XMIN,XMAX
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -6399,11 +6399,11 @@ C     WRITE(ITLIS,1000) SCM
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CYLIN(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE CYLINDER TYPE DIAGRAM
 C
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON /PARCUT/ SWMAX
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
@@ -7154,6 +7154,7 @@ c      write(16,*) 'ID,ISUM,CHARGE=', ID,ISUM,CHARGE
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DECAYQ(IP,IPOINT)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
       integer*4 :: NJSET,JORIG(100),JTYPE(100),
      &     JDCAY(100)
@@ -7181,7 +7182,6 @@ C     LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
       LOGICAL TNEW
       DIMENSION JJ(5),EE(5)
       EQUIVALENCE (J1,JJ(1)),(E1CM,EE(1))
-      COMMON/CONST/PI,SQRT2,ALF
       DIMENSION PGEN(5,5),RND(5),U(3),BETA(3),ROT(3,3),PSAVE(3),
      &     REDUCE(5), PSUM(5)
       DATA REDUCE/1.,1.,2.,5.,15./
@@ -7587,6 +7587,7 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CLUSTR(IFL1,IFL2,AMCTR)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS CLUSTER BREAKING
@@ -7602,7 +7603,6 @@ C
      *,IDCAY(499)
       COMMON/FRGCPA/ PUDC,PUDCC,PSPINC,PJSPNC,PMIX1C(3,2),PMIX2C(3,2),
      *PBARC
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/COMNPT/ NOPTC
       LOGICAL NOPTC
       COMMON/COLRET/ LRET
@@ -7771,13 +7771,13 @@ C  CONSTRUCT BARYON IDENT
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE STRING(IFL1,IFL2,AMSTR)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS STRING BREAKING
 C  WITH QUARK AND ANTIQUARK OR QUARK AND DIQUARK OR DIQUARK AND
 C  ANTIDIQUARK IFL1 AND IFL2 ON ENDS
 C  AMSTR IS MASS OF STRING
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -8917,6 +8917,7 @@ C     ELASTIC CROSS SECTION
                END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION PPCRSE(S,IB)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -8924,7 +8925,6 @@ C   COMPUTE PP-TOTAL CROSS SECTION
 C
 C   M.M. BLOCK AND R.N. CAHN REV.MOD.PHYS.V.57,N2(1985) (SET 2)
 C
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/RHOPP/ RHOPP
       COMMON/CREGGE/ CREGGE
       DATA A/41.30/,D/-40.51/,BETA/0.62/,ALFA/0.47/,S0/293.46/
@@ -8941,6 +8941,7 @@ C
       END
 C**********************************************************************
       DOUBLE PRECISION FUNCTION PPELSE(S,IB)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -8948,7 +8949,6 @@ C   COMPUTE PP-ELASTIC CROSS SECTION
 C
 C   M.M. BLOCK AND R.N. CAHN REV.MOD.PHYS.V.57,N2(1985) (SET 1)
 C
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/CPPTOT/ CPPTOT
       COMMON/RHOPP/ RHOPP
       DATA CP/10.90/,DP/-0.08/,EP/0.043/,CM/23.27/,DM/0.93/
@@ -9945,11 +9945,11 @@ C   @@@@@@@@@@@@@@@@@@
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE TWOSHE(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C       COMPUTE TWO SHEETS ANNIHILATION DIAGRAM
 C
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -10076,11 +10076,11 @@ C     PT VALUES FOR PARTONS
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE THREES(IRET)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE THREE SHEETS ANNIHILATION DIAGRAM
 C
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PRIMP0/ P0
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -10368,12 +10368,12 @@ C  COMPUTE SCATTERING ANGLE
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION WIDTH(GAM)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
 C   COMPUTE WIDTH OF PARTICLE
 C
-        COMMON /CONST/ PI,SQRT2,ALF
 100   DRND=RNDM(-1.)
       GT=GAM*SQRT(-LOG(DRND))
       PHI=2.*PI*RNDM(-1.)
@@ -10614,9 +10614,9 @@ C     IF(IB1.EQ.-1.AND.IB2.NE.-1) B=11.0
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
         SUBROUTINE ELZPHI(IK1,IK2,TKIN,Z,PHI,IEXE)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-        COMMON /CONST/ PI,SQRT2,ALF
       PHI=2.*PI*RNDM(-1.)
       IF(IEXE.EQ.0) GO TO 1
        Z=COSP(TKIN,12)
@@ -10782,6 +10782,7 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE SIGIN
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C  COMPUTE DIAGRAM WEIGHTS FOR INELASTIC
@@ -10798,7 +10799,6 @@ C
       LOGICAL MULTP
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/HADSIG/SIGS(100),SIGEVT,NSIGS,INOUT(2,100)
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/REACOE/ COEF(11),COEF1(11)
       COMMON/COMPLI/ LIMP
@@ -11718,6 +11718,7 @@ C ONLY FOR STRANGE QUARK
        END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
        SUBROUTINE PTQUAR(KEY)
+      use modifiedDCMParams, only: pi, twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C    COMPUTE PARTON TRANSFERSE MOMENTA
@@ -11737,7 +11738,6 @@ C        MOMENTA VALENCE AND SEA QUARKS
        COMMON/COMPYB/ PYBV1,PYBV2,PYBQQ,
      *PYBS1(12),PYBS2(12)
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
-      COMMON/CONST/PI,SQRT2,ALF
       COMMON/COMIND/ PUD,SIGMA,ALFA,BETA
       COMMON/COMQMA/ AMQUA1,AMQUA2,AMQQA,
      *AMQAS1(12),AMQAS2(12)

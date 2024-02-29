@@ -70,44 +70,10 @@
     ! IF  C.M. FRAME
     icms=1
 
-    call setcon
     call setdky(lprnt)
     return
 ! ====================================================================
   end subroutine initam
-
-
-  subroutine setcon
-
-! ====================================================================
-!
-! THIS SUBROUTINE SETS THE CONSTANTS IN /CONST/.
-!
-! ====================================================================
-
-    use, intrinsic:: iso_fortran_env, only: int32, real64
-    use modifiedDCMParams, only: pi, SqrtTwo, fscon
-
-
-    implicit none
-
-! ====================================================================
-
-    real(real64) :: pi_orig, sqrt2, alf
-    common/const/pi_orig,sqrt2,alf
-
-! ====================================================================
-
-    ! pi    = 4.*atan(1.0d0)
-    ! sqrt2 = sqrt(2.0d0)
-    ! alf   = 1./137.036
-    pi_orig = pi
-    sqrt2 = SqrtTwo
-    alf = fscon
-
-    return
-! ====================================================================
-  end subroutine setcon
 
 
   subroutine setdky(printStatus)

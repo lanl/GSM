@@ -128,7 +128,6 @@ module modifiedDCMData
   ! Module procedures:
   public  :: initializeModifiedDCMData
   private :: initam
-  private :: setcon
   private :: setdky           ! Reads the effective decay data file
   private :: readPhotonData   ! Reads the effective photon data file
   private :: printMDCM
