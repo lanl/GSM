@@ -10,7 +10,6 @@
     use, intrinsic:: iso_fortran_env, only: int32, real64
 
     implicit none
-    logical :: lprnt
 
 ! ====================================================================
 ! Simulation varibles (may change w/ simulation)
@@ -52,7 +51,6 @@
 
 ! ====================================================================
 
-    lprnt=.false.
     yesela=.false.
     keyhh=.false.
     keypla=.false.
@@ -69,8 +67,6 @@
     ICMS=0
     ! IF  C.M. FRAME
     icms=1
-
-    call setdky(lprnt)
     return
 ! ====================================================================
   end subroutine initam

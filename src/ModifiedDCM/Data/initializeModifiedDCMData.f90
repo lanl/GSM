@@ -45,6 +45,7 @@
     ! Initialize all non-parameterized data here and beyond:
     call readPhotonData(photoFile)
     call initam()
+    call readDecayData()
 
     return
 ! ====================================================================

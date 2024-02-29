@@ -1,5 +1,5 @@
 
-  subroutine setdky(printStatus)
+  subroutine readDecayData(printStatusIN)
 
 ! ====================================================================
 !
@@ -13,8 +13,9 @@
         & output_unit, error_unit
 
     implicit none
-    logical, intent(in   ) :: printStatus
+    logical, intent(in   ), optional :: printStatusIN
 
+    logical :: printStatus = .FALSE.
     integer(int32) :: i, ifl1, ifl2, ifl3, index, iold, ires, itype, &
          & jspin, k, loop
     real(real64)   :: br
@@ -40,6 +41,9 @@
 
 ! ====================================================================
 
+    if(present(printStatusIN)) then
+       printStatus = printStatusIN
+    end if
     if(printStatus) write(output_unit,10)
     loop=0
     iold=0
@@ -135,4 +139,4 @@
 1002   format(10a8)
 1003   format(1x,10a8)
 ! ====================================================================
-  end subroutine setdky
+  end subroutine readDecayData
