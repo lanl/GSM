@@ -32,6 +32,9 @@
 
 ! ====================================================================
 
+! nforce, iforce, and mforce should be set as data options. Additionally, should
+! limit nforce to 20; iforce/mforce could be simpler, default is 0 for all
+! values
     integer(int32) :: nforce, iforce, mforce
     common/force/nforce,iforce(20),mforce(5,20)
     ! LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
@@ -102,17 +105,20 @@
          & br,ires,(imode(k),k=1,5)
     go to 200
 !          SET FORCED DECAY MODES
-300 if(nforce == 0) go to 400
-    do i=1,nforce
-       loop=loop+1
-       if(loop > 600) go to 9999
-       call flavor(iforce(i),ifl1,ifl2,ifl3,jspin,index)
-       look(index)=loop
-       do k = 1,5
-          mode(k,loop)=mforce(k,i)
+300 if(nforce > 0) then
+       do i=1,nforce
+          loop=loop+1
+          if(loop > 600) go to 9999
+          ! Based on "flavor" and iforce(:) = 0, this should return 0 for all
+          ! values.
+          call flavor(iforce(i),ifl1,ifl2,ifl3,jspin,index)
+          look(index)=loop
+          do k = 1,5
+             mode(k,loop)=mforce(k,i)
+          enddo
+          cbr(loop)=1.
        enddo
-       cbr(loop)=1.
-    enddo
+    end if
 
 !  READ AND PRINT NOTES FROM DECAYTABLE FILE
 400 if(printStatus) then

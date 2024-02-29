@@ -8280,6 +8280,8 @@ C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C          THIS SUBROUTINE UNPACKS THE IDENT CODE ID=+/-IJKL
+C          I.E., GIVEN THE PARTICLE "ID", LOOKUP CHARACTERISTICS AND
+C          RETURN
 C
 C          MESONS--
 C          I=0, J<=K, +/- IS SIGN FOR J
