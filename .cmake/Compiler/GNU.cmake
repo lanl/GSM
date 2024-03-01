@@ -11,7 +11,7 @@ set (common_flags "\
 ${FPP_FLAG} \
 -fmodule-private \
 -fimplicit-none \
--ffree-line-length-128")
+-ffree-line-length-none")
 
 # Set the flags for various compilation types
 set (CMAKE_Fortran_FLAGS_RELEASE "\

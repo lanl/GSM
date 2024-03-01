@@ -39,13 +39,10 @@
     if( present(clientPhotoFile) ) photoFile = clientPhotoFile
     if( present(clientDecayFile) ) decayFile = clientDecayFile
 
-    ! Set the effective files:
-    effectiveDecayFile  = decayFile
-
     ! Initialize all non-parameterized data here and beyond:
     call readPhotonData(photoFile)
+    call readDecayData(decayFile)
     call initam()
-    call readDecayData()
 
     return
 ! ====================================================================

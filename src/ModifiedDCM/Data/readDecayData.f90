@@ -1,5 +1,5 @@
 
-  subroutine readDecayData(printStatusIN)
+  subroutine readDecayData(decayFileIN, printStatusIN)
 
 ! ====================================================================
 !
@@ -9,8 +9,10 @@
 ! ====================================================================
 
     implicit none
-    logical, intent(in   ), optional :: printStatusIN
+    character(*), intent(in   ), optional :: decayFileIN
+    logical,      intent(in   ), optional :: printStatusIN
 
+    character(:), allocatable :: decayFile
     logical :: printStatus = .false.
 
     ! Values read from the data file
@@ -23,10 +25,11 @@
         &      exitLoop = .false., &
         &      loopExceeded = .false.
     integer(int32) :: &
-        & index, &   ! Particle index in lookup tables
-        & iold, &    ! Prior particle ID
-        & loop, &    ! Lookup index (also the loop number)
-        & rc         ! File I/O status
+        & decayUnit, & ! File unit for the decay table
+        & index, &     ! Particle index in lookup tables
+        & iold, &      ! Prior particle ID
+        & loop, &      ! Lookup index (also the loop number)
+        & rc           ! File I/O status
 
 ! ====================================================================
 
@@ -56,6 +59,10 @@
 ! ====================================================================
 
     ! Parameter validation
+    decayFile = defaultDecayFile
+    if(present(decayFileIN)) then
+       decayFile = decayFileIN
+    end if
     if(present(printStatusIN)) then
        printStatus = printStatusIN
     end if
@@ -76,7 +83,7 @@
 
     ! Check if file is already opened somewhere
     ! If so, rewind it / start at the front
-    inquire(file = effectiveDecayFile, &
+    inquire(file = decayFile, &
         & number = decayUnit)
     if (decayUnit /= -1_int32) rewind decayUnit
 
@@ -94,14 +101,14 @@
           lmode(:) = iblank
 
           ! Open file if it's not already opened
-          inquire(file = effectiveDecayFile, &
+          inquire(file = decayFile, &
              & number = decayUnit)
           if (decayUnit == -1_int32) then
              open(newunit = decayUnit, &
-                & file = effectiveDecayFile, &
+                & file = decayFile, &
                 & status = "old", action = "read", iostat = rc)
              call insist(rc == 0, &
-                & "Failed to open file: " // effectiveDecayFile, &
+                & "Failed to open file: " // decayFile, &
                 & __FILE__, &
                 & __LINE__)
           end if
@@ -110,7 +117,7 @@
           read(decayUnit, *, iostat = rc) &
              & ires, itype, br, (imode(i), i = 1, 5)
           call insist(rc <= 0, &
-             & "A failure occurred when reading from decay data file: " // effectiveDecayFIle, &
+             & "A failure occurred when reading from decay data file: " // decayFile, &
              & __FILE__, &
              & __LINE__)
 

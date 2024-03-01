@@ -13,7 +13,7 @@
 
     use, intrinsic:: iso_fortran_env, only: int32, real64
     use modifiedDCMParams, only: zro, two, twpi, degreeToRad
-    use modifiedDCMData, only: theta, ctheta, xsectd, elg
+    use modifiedDCMData, only: ctheta, xsectd, elg
 
     implicit none
     real(real64), intent(in   ) :: egamma
@@ -96,7 +96,7 @@
     do jch = 1,22
        sint = zro
        do j = 1,181
-          si(jch,j) = qintxsq(thetai(j), theta, s, jch, 22, 19)
+          si(jch,j) = qintxsq(thetai(j), s, jch, 22, 19)
           if (j >= 2) then
              dom = twpi*(cthetai(j-1) - cthetai(j))
              sint = sint + dom*(si(jch,j-1) + si(jch,j))/two

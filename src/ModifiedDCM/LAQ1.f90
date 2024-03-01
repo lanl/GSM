@@ -11459,7 +11459,7 @@
     do jch = 1,22
        sint = zro
        do j = 1,181
-          si(jch,j) = qintxsq(thetai(j), theta, s, jch, 22, 19)
+          si(jch,j) = qintxsq(thetai(j), s, jch, 22, 19)
           if (j >= 2) then
              dom = twpi*(cthetai(j-1) - cthetai(j))
              sint = sint + dom*(si(jch,j-1) + si(jch,j))/two
@@ -11478,7 +11478,7 @@
 
 ! ======================================================================
 
-  function qintxsq (x, th, se, l, m, n)
+  function qintxsq (x, se, l, m, n)
 
 ! ======================================================================
 !
@@ -11491,27 +11491,27 @@
 
 
     use, intrinsic:: iso_fortran_env, only: int32, real64
+    use numbers, only: zro, one
+    use modifiedDCMData, only : theta
 
 !    implicit none
     implicit real(real64) (a-h, o-z), integer(int32) (i-n)
 
 ! ======================================================================
 
-    dimension th(n), se(m,n)
-
-    data zro, one /0.d0, 1.d0/
+    dimension se(m,n)
 
 ! ======================================================================
 
-    do k = 1,n-1
-       if (abs(x - th(k)) <= 1.0d-5)  then
+    do k = 1, n - 1
+       if (abs(x - theta(k)) <= 1.0d-5)  then
           qintxsq = se(l,k)
           qintxsq = max(qintxsq, zro)
           return
        endif
     enddo
     do k = 2,n-1
-       if (x < th(k))  then
+       if (x < theta(k))  then
           k1 = k - 1
           k2 = k
           k3 = k + 1
@@ -11522,9 +11522,9 @@
     k2 = n - 1
     k3 = n
 10  continue
-    x1 = th(k1)
-    x2 = th(k2)
-    x3 = th(k3)
+    x1 = theta(k1)
+    x2 = theta(k2)
+    x3 = theta(k3)
     y1 = se(l,k1)
     y2 = se(l,k2)
     y3 = se(l,k3)
@@ -11539,7 +11539,7 @@
     b = db*d1
     c = dc*d1
     qintxsq = a*x*x + b*x + c
-    qintxsq = max(qintxsq,zro)
+    qintxsq = max(qintxsq, zro)
     return
 
 ! ======================================================================
