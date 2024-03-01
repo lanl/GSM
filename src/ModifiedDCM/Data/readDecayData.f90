@@ -159,6 +159,24 @@
        end if exceeded
     end do primary
 
+    ! Read and print notes from the decay table file
+    if (.not.loopExceeded .and. printStatus) then
+        exitLoop = .false.
+        readNotes: do while (.not.exitLoop)
+           ! Read
+           read(decayUnit, 1002, iostat=rc) lread
+
+           ! If EOF, error, or last line, then exit
+           ! Otherwise, print the line back to the user
+           if (rc /= 0 .or. lread(1) == iquit) then
+               exitLoop = .true.
+           else
+              write(output_unit, 1003) lread
+           end if
+       end do readNotes
+    end if
+    close(decayUnit)
+
     ! Set forced decay modes, if any specified
     if(.not.loopExceeded .and. nforce > 0) then
        forcedModes: do i = 1, nforce
@@ -205,24 +223,6 @@
           end if forcedExceeded
        end do forcedModes
     end if
-
-    ! Read and print notes from the decay table file
-    if (.not.loopExceeded .and. printStatus) then
-        exitLoop = .false.
-        readNotes: do while (.not.exitLoop)
-           ! Read
-           read(decayUnit, 1002, iostat=rc) lread
-
-           ! If EOF, error, or last line, then exit
-           ! Otherwise, print the line back to the user
-           if (rc /= 0 .or. lread(1) == iquit) then
-               exitLoop = .true.
-           else
-              write(output_unit, 1003) lread
-           end if
-       end do readNotes
-    end if
-    close(decayUnit)
 
     ! If loop limited was exceeded, then print error and close file
     if (loopExceeded) then

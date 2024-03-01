@@ -76,7 +76,7 @@ module modifiedDCMData
 
   ! For radius of projectile/target w/ [2 < A <= 10]
   ! TODO: Use r_rms module instead?
-  real(real64), public, parameter, dimension(10) :: rmsDat = [ &
+  real(real64), private, parameter, dimension(10) :: rmsDat = [ &
        & 0.85, 2.095, 1.976, 1.671, 2.50, 2.57, 2.45, 2.519, 2.45, 2.42 ]
 
   ! For photon cross section information:
