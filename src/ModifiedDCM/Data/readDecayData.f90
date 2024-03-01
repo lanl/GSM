@@ -222,6 +222,7 @@
            end if
        end do readNotes
     end if
+    close(decayUnit)
 
     ! If loop limited was exceeded, then print error and close file
     if (loopExceeded) then
@@ -230,7 +231,6 @@
             & loopLimit
     end if
 
-    close(decayUnit)
     return
 ! ====================================================================
 10  format(1h1,30(1h*)/2h *,28x,1h*/ &

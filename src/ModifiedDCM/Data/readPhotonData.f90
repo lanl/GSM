@@ -17,7 +17,7 @@
     character(len=*), intent(in   ) :: photonFile
 
     integer(int32):: photonUnit
-    integer(int32) :: inth, inw, jch
+    integer(int32) :: inth, inw, jch, rc
 
 ! ======================================================================
 
@@ -27,12 +27,31 @@
     if (.not.allocated(elgDat)) allocate(elgDat(22, 50))
 
     ! ***      Read differential cross section data file
-    open(newunit = photonUnit, file=photonFile, status="old", action="read")
+    open(newunit = photonUnit, &
+        & file=photonFile, &
+        & status="old", &
+        & action="read", &
+        iostat = rc)
+    Insist (rc == 0, "Failed to read file: " // photonFile)
     do jch = 1,22
-       read (photonUnit, 40)
+       read (photonUnit, 40, iostat = rc)
+       call insist(rc == 0, &
+           & "Failed during read of channel label in file: " // photonFile, &
+           & __FILE__, &
+           & __LINE__)
        do inw = 1,50
-          read (photonUnit, 30) ecmDat(jch,inw), (xsectdDat(jch,inw,inth), inth=0,4)
-          read (photonUnit, 20) (xsectdDat(jch,inw,inth), inth=5,18)
+          read (photonUnit, 30, iostat = rc) ecmDat(jch,inw), (xsectdDat(jch,inw,inth), inth=0,4)
+          call insist(rc == 0, &
+              & "Failed to read ECM and first half of cross section data in file: " // photonFile, &
+              & __FILE__, &
+              & __LINE__)
+          read (photonUnit, 20, iostat = rc) (xsectdDat(jch,inw,inth), inth=5,18)
+          call insist(rc == 0, &
+              & "Failed to read last half of cross section data in file: " // photonFile, &
+              & __FILE__, &
+              & __LINE__)
+
+          ! Perform calc with data now
           elgDat(jch,inw) = (ecmDat(jch,inw)**2 - emnucg**2)/(two*emnucg)
        end do
     end do
