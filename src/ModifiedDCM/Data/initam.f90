@@ -54,7 +54,7 @@
 
 ! ====================================================================
 
-    nodcay = .not.model_decay
+    nodcay = .not.defaultChannels%modelDecay()
     noeta = .false.
     nopi0 = .true.
     noka0 = .true.

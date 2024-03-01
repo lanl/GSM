@@ -68,18 +68,15 @@
     end if
     if(printStatus) write(output_unit,10)
 
+    ! Establish internal decay channel data
+    defaultChannels%modelDecayOpt = .true.
+    call defaultChannels%allocateData()
+
     ! Setup preliminary values
     loop=0
     iold=0
-    look(:) = 0
-    if(.not. model_decay) return
     exitLoop = .false.
     loopExceeded = .false.
-
-    ! Default data values (do NOT default mappings, just in case)
-    look(:) = 0_int32
-    cbr(:) = one
-    mode(:, :) = 0_int32
 
     ! Check if file is already opened somewhere
     ! If so, rewind it / start at the front
@@ -137,14 +134,14 @@
                 ! ID by obtaining the lookup value (to get the associated loop #),
                 ! then can obtain the cbr or mode lookup using the loop number.
                 call flavor(ires, ifl1, ifl2, ifl3, jspin, index)
-                look(index) = loop
+                defaultChannels%lookDat(index) = loop
              end if
              iold = ires
 
              ! Assign specific data values associated to the particle
-             cbr(loop) = br
+             defaultChannels%cbrDat(loop) = br
              do i = 1, 5
-                mode(i, loop) = imode(i)
+                defaultChannels%modeDat(i, loop) = imode(i)
                 if(imode(i) /= 0) call label(lmode(i), imode(i))
              end do
              call label(lres, ires)
@@ -158,6 +155,11 @@
           end if processdata
        end if exceeded
     end do primary
+
+    ! TODO: Remove common block
+    look(:) = defaultChannels%lookDat(:)
+    cbr(:) = defaultChannels%cbrDat(:)
+    mode(:, :) = defaultChannels%modeDat(:, :)
 
     ! Read and print notes from the decay table file
     if (.not.loopExceeded .and. printStatus) then
@@ -178,6 +180,8 @@
     close(decayUnit)
 
     ! Set forced decay modes, if any specified
+    ! TODO: Move to object constructor - don't want this for the module's data
+    ! object
     if(.not.loopExceeded .and. nforce > 0) then
        forcedModes: do i = 1, nforce
           loop = loop + 1_int32
@@ -190,36 +194,38 @@
              ! channel has a forced decay specified
              call flavor(iforce(i), ifl1, ifl2, ifl3, jspin, index)
 
-             ! TODO: Instead of growing the mapping tables and unassociating
-             ! potential CBR values, ought to obtain the existing mapping, if
-             ! one exists, and then override the mode values.
+             ! TODO: Instead of growing the mapping tables, we ought to obtain
+             ! the existing mapping, if one exists, and then override the mode values.
+             ! with cbr = 1, any sampling of that particle's decay will force
+             ! usage of that decay channel.
              !
              ! This would look like the following unreachable code
              ! ("not_implemented" contract added for safety). This was not
              ! implemented since it could not be easily tested and verified
              ! against real data at the time of consideration
              if (.false.) then
-                call not_implemented("Map restriction and CBR retention", &
+                call not_implemented("Map restriction", &
                    & __FILE__, &
                    & __LINE__)
                 suggestedLoop = look(index)
                 if (suggestedLoop == 0) then
-                    ! ID is unmapped; create the mapping and associate a cbr value
+                   ! ID is unmapped; create a new mapping
                    suggestedLoop = loop
                    look(index) = suggestedLoop
-                   cbr(suggestedLoop) = one
                 end if
-                do k = 1, 5
-                   mode(k, suggestedLoop) = mforce(k, i)
-                end do
              else
                 ! Add particle ID lookup table and associated values
-                look(index) = loop
-                cbr(loop) = one
-                do k = 1, 5
-                   mode(k,loop) = mforce(k,i)
-                end do
+                suggestedLoop = loop
+                look(index) = suggestedLoop
              end if
+
+             ! Now force the channel and modes
+             ! NOTE: "cbr" is setup as a channel probability associated with
+             !       a random sampling; setting = 1 will force that channel.
+             cbr(suggestedLoop) = one
+             do k = 1, 5
+                mode(k, suggestedLoop) = mforce(k, i)
+             end do
           end if forcedExceeded
        end do forcedModes
     end if

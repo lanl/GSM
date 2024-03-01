@@ -95,16 +95,42 @@ module modifiedDCMData
   !> \brief elg (size of [22, 50])
   real(real64),   private, dimension(:, :), allocatable :: elgDat
 
+
   ! For decay data read from the file:
   !> \brief Indicates if decay channels will be simulated.
-  ! TODO: Place into mDCM data class?
-  logical, public :: model_decay = .true.
-  !> \brief look decay data (size of 400)
-  integer(int32), public, protected, dimension(:), allocatable :: look
-  !> \brief cbr decay data (size of 600)
-  real(real64),   public, protected, dimension(:), allocatable :: cbr
-  !> \brief mode decay data (size of 5, 600)
-  integer(int32), public, protected, dimension(:, :), allocatable :: mode
+  type, public :: decayChannels
+     private
+     !> \brief Indicates that decay should be modelled
+     logical, private :: modelDecayOpt = .true.
+
+     !> \brief look decay data (size of 400)
+     integer(int32), private, dimension(:), allocatable :: lookDat
+
+     !> \brief cbr decay data (size of 600)
+     real(real64),   private, dimension(:), allocatable :: cbrDat
+
+     !> \brief mode decay data (size of 5, 600)
+     integer(int32), private, dimension(:, :), allocatable :: modeDat
+  contains
+     private
+     procedure, private :: allocateData
+
+     ! Interface channels
+     procedure, public :: modelDecay
+     procedure, public :: look
+     procedure, public :: cbr
+     procedure, public :: mode
+
+  end type decayChannels
+
+  !> \brief decayChannels object constructor
+  public :: newDecayChannels
+  interface newDecayChannels
+     module procedure :: new_DecayChannels
+  end interface
+
+  !> \brief Internal decay channel data; used to create new objects
+  type(decayChannels), private :: defaultChannels
 
 
   ! For message handling:
@@ -151,6 +177,7 @@ contains
 #include "readPhotonData.f90"
 #include "readDecayData.f90"
 #include "interfaceFunctions.f90"
+#include "decayChannelInterface.f90"
 
 #include "../printMDCM.f90"
 
