@@ -22,18 +22,18 @@
 ! ======================================================================
 
     ! Allocate memory for mDCM data
-    if (.not.allocated(xsectd)) allocate(xsectd(22, 50, 0:18))
-    if (.not.allocated(ecm)) allocate(ecm(22, 50))
-    if (.not.allocated(elg)) allocate(elg(22, 50))
+    if (.not.allocated(xsectdDat)) allocate(xsectdDat(22, 50, 0:18))
+    if (.not.allocated(ecmDat)) allocate(ecmDat(22, 50))
+    if (.not.allocated(elgDat)) allocate(elgDat(22, 50))
 
     ! ***      Read differential cross section data file
     open(newunit = photonUnit, file=photonFile, status="old", action="read")
     do jch = 1,22
        read (photonUnit, 40)
        do inw = 1,50
-          read (photonUnit, 30) ecm(jch,inw), (xsectd(jch,inw,inth), inth=0,4)
-          read (photonUnit, 20) (xsectd(jch,inw,inth), inth=5,18)
-          elg(jch,inw) = (ecm(jch,inw)**2 - emnucg**2)/(two*emnucg)
+          read (photonUnit, 30) ecmDat(jch,inw), (xsectdDat(jch,inw,inth), inth=0,4)
+          read (photonUnit, 20) (xsectdDat(jch,inw,inth), inth=5,18)
+          elgDat(jch,inw) = (ecmDat(jch,inw)**2 - emnucg**2)/(two*emnucg)
        end do
     end do
     close (photonUnit)

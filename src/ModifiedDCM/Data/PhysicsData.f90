@@ -10,6 +10,7 @@ module modifiedDCMData
   use, intrinsic:: iso_fortran_env, only: int32, real64, output_unit
   use modifiedDCMParams, only: one, degreeToRad
   use Contracts
+#include "../../Utilities/Contracts/contract_macros.fpp"
   implicit none
   private
 
@@ -89,11 +90,11 @@ module modifiedDCMData
   ! For photon data read from the file:
   ! Note these arrays use ~180 kB.
   !> \brief Cross section data (size of [22, 50, 0:18])
-  real(real64),   public, protected, dimension(:, :, :), allocatable :: xsectd
+  real(real64),   private, dimension(:, :, :), allocatable :: xsectdDat
   !> \brief Center of mass energy? (size of [22, 50])
-  real(real64),   public, protected, dimension(:, :), allocatable :: ecm
+  real(real64),   private, dimension(:, :), allocatable :: ecmDat
   !> \brief elg (size of [22, 50])
-  real(real64),   public, protected, dimension(:, :), allocatable :: elg
+  real(real64),   private, dimension(:, :), allocatable :: elgDat
 
   ! For decay data read from the file:
   !> \brief Indicates if decay channels will be simulated.
@@ -125,6 +126,10 @@ module modifiedDCMData
   type(mDCMDataIO), private :: dataIO
 
 
+  ! Data interface methods (e.g., accessing data arrays)
+  public  :: xsectd
+  public  :: ecm
+  public  :: elg
 
   ! Module procedures:
   public  :: initializeModifiedDCMData
@@ -141,6 +146,7 @@ contains
 #include "initam.f90"
 #include "readPhotonData.f90"
 #include "readDecayData.f90"
+#include "interfaceFunctions.f90"
 
 #include "../printMDCM.f90"
 
