@@ -111,6 +111,9 @@ module modifiedDCMData
 
      !> \brief mode decay data (size of 5, 600)
      integer(int32), private, dimension(:, :), allocatable :: modeDat
+
+     !> \brief Indicates the number of entries in the class arrays
+     integer(int32), private :: numEntriesDat = 0_int32
   contains
      private
      procedure, private :: allocateData

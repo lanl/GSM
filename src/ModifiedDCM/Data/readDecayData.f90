@@ -34,7 +34,7 @@
 ! ====================================================================
 
     ! Parameters and unimportant temp values
-    integer(int32) :: i, ifl1, ifl2, ifl3, itype, jspin, k, suggestedLoop
+    integer(int32) :: i, ifl1, ifl2, ifl3, itype, jspin, k
     character(len=8) :: lread(10), lmode(6), lres
     integer(int32), parameter :: loopLimit = 600_int32
     character(len=*), parameter :: &
@@ -43,11 +43,6 @@
 
 ! ====================================================================
 
-! nforce, iforce, and mforce should be set as data options. Additionally, should
-! limit nforce to 20; iforce/mforce could be simpler, default is 0 for all
-! values. Technically, the number of forced channels can be arbitrary.
-    integer(int32) :: nforce, iforce, mforce
-    common/force/nforce,iforce(20),mforce(5,20)
     ! LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
     ! We should set these more dynamically; perhaps bigger than 600 and make
     ! these allocatable? Further, we can restrict their use to ensure
@@ -155,6 +150,7 @@
           end if processdata
        end if exceeded
     end do primary
+    defaultChannels%numEntriesDat = loop
 
     ! TODO: Remove common block
     look(:) = defaultChannels%lookDat(:)
@@ -179,56 +175,6 @@
     end if
     close(decayUnit)
 
-    ! Set forced decay modes, if any specified
-    ! TODO: Move to object constructor - don't want this for the module's data
-    ! object
-    if(.not.loopExceeded .and. nforce > 0) then
-       forcedModes: do i = 1, nforce
-          loop = loop + 1_int32
-          forcedExceeded: if (loop > loopLimit) then
-             exitLoop = .true.
-             loopExceeded = .true.
-             exit forcedModes
-          else
-             ! Determine the particle index for the associated particle ID who's
-             ! channel has a forced decay specified
-             call flavor(iforce(i), ifl1, ifl2, ifl3, jspin, index)
-
-             ! TODO: Instead of growing the mapping tables, we ought to obtain
-             ! the existing mapping, if one exists, and then override the mode values.
-             ! with cbr = 1, any sampling of that particle's decay will force
-             ! usage of that decay channel.
-             !
-             ! This would look like the following unreachable code
-             ! ("not_implemented" contract added for safety). This was not
-             ! implemented since it could not be easily tested and verified
-             ! against real data at the time of consideration
-             if (.false.) then
-                call not_implemented("Map restriction", &
-                   & __FILE__, &
-                   & __LINE__)
-                suggestedLoop = look(index)
-                if (suggestedLoop == 0) then
-                   ! ID is unmapped; create a new mapping
-                   suggestedLoop = loop
-                   look(index) = suggestedLoop
-                end if
-             else
-                ! Add particle ID lookup table and associated values
-                suggestedLoop = loop
-                look(index) = suggestedLoop
-             end if
-
-             ! Now force the channel and modes
-             ! NOTE: "cbr" is setup as a channel probability associated with
-             !       a random sampling; setting = 1 will force that channel.
-             cbr(suggestedLoop) = one
-             do k = 1, 5
-                mode(k, suggestedLoop) = mforce(k, i)
-             end do
-          end if forcedExceeded
-       end do forcedModes
-    end if
 
     ! If loop limited was exceeded, then print error and close file
     if (loopExceeded) then

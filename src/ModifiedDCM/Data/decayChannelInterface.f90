@@ -1,5 +1,7 @@
 
-  function new_DecayChannels (modelDecayIN) result(obj)
+  function new_DecayChannels (modelDecayIN, &
+                              & forcedChannelIDs, &
+                              & forcedChannelDecays) result(obj)
 
 ! ======================================================================
 !
@@ -7,12 +9,25 @@
 !
 ! ======================================================================
     implicit none
-    logical,              intent(in   ), optional :: modelDecayIN
+    logical,        intent(in), optional :: modelDecayIN
+    integer(int32), intent(in), optional, dimension(:) :: forcedChannelIDs
+    integer(int32), intent(in), optional, dimension(:,:) :: forcedChannelDecays
     type(decayChannels) :: obj
 
     logical :: modelDecay = .true.
-    integer(int32) :: allocateStatus, i, j
 
+    ! Variables to aid in interim logic
+    integer(int32), parameter :: maxLoop = 60
+    integer(int32) :: &
+        & numForcedChannels, &   ! Num. forced channels provided
+        & numForcedModes, &      ! Num. forced decay modes provided
+        & suggestedLoop         ! Suggested index for forced channel mapping
+    ! Dummy variables only needed for other calls or looping
+    integer(int32) :: i, j, ifl1, ifl2, ifl3, jspin, indx
+
+! ======================================================================
+    integer(int32) :: nforce, iforce, modes
+    common/force/nforce,iforce(20),modes(5,20)
 ! ======================================================================
 
     ! Set defaults
@@ -23,24 +38,93 @@
     call obj%allocateData()
 
     ! If decay will be modelled, copy default values
-    if (obj%modelDecay()) then
-        ! Copy lookup mappings
+    useDecay: if (obj%modelDecay()) then
+        ! Copy lookup mappings via interface
         lookup: do i = 1, size(obj%lookDat, 1)
            obj%lookDat(i) = defaultChannels%look(i)
         end do lookup
 
+        ! Copy decay channel IDs via interface
         channelProbability: do i = 1, size(obj%cbrDat, 1)
            obj%cbrDat(i) = defaultChannels%cbr(i)
         end do channelProbability
 
+        ! Copy channel progeny IDs via interface
         modesJ: do j = 1, size(obj%modeDat, 2)
            modesI: do i = 1, size(obj%modeDat, 1)
               obj%modeDat(i, j) = defaultChannels%mode(i, j)
            end do modesI
         end do modesJ
+        obj%numEntriesDat = defaultChannels%numEntriesDat
 
-        ! TODO: Apply forced channels
-    end if
+        ! Overwrite data with specified forced channels
+        forcedChannelsProvided: if (present(forcedChannelIDs) .AND. &
+            & present(forcedChannelDecays)) then
+
+           ! Check if provided arrays are of ok size / shape
+           numForcedChannels = MIN(size(forcedChannelIDs), size(forcedChannelDecays, 2))
+           numForcedModes = MIN(size(forcedChannelDecays, 1), 5)
+           if (numForcedChannels <= 0 .OR. numForcedModes <= 0) then
+              write(dataIO%message, "(A)") "Forced channels will not be applied, array sizes invalid."
+              call dataIO%print(2, 3, dataIO%message)
+              exit forcedChannelsProvided
+           end if
+
+           ! Set forced decay modes, if any specified and array size remains
+           mappingsAvailable: if(obj%numEntriesDat < maxLoop) then
+              forcedModes: do i = 1, numForcedChannels
+                 obj%numEntriesDat = obj%numEntriesDat + 1_int32
+
+                 ! Check if capacity reached; decrement and exit if so
+                 forcedExceeded: if (obj%numEntriesDat > maxLoop) then
+                    obj%numEntriesDat = obj%numEntriesDat - 1_int32
+                    exit forcedModes
+                 else
+                    ! Determine the particle indx for the associated particle ID who's
+                    ! channel has a forced decay specified
+                    call flavor(forcedChannelIDs(i), ifl1, ifl2, ifl3, jspin, indx)
+
+                    ! TODO: Instead of growing the mapping tables, we ought to obtain
+                    ! the existing mapping, if one exists, and then override the mode values.
+                    ! with cbr = 1, any sampling of that particle's decay will force
+                    ! usage of that decay channel.
+                    !
+                    ! This would look like the following unreachable code
+                    ! ("not_implemented" contract added for safety). This was not
+                    ! implemented since it could not be easily tested and verified
+                    ! against real data at the time of consideration
+                    if (.false.) then
+                       call not_implemented("Map restriction", &
+                          & __FILE__, &
+                          & __LINE__)
+                       suggestedLoop = obj%look(indx)
+                       if (suggestedLoop == 0) then
+                          ! ID is unmapped; create a new mapping
+                          ! (otherwise, use existing)
+                          suggestedLoop = obj%numEntriesDat
+                          obj%lookDat(indx) = suggestedLoop
+                       end if
+                    else
+                       ! Add particle ID lookup table and associated values
+                       suggestedLoop = obj%numEntriesDat
+                       obj%lookDat(indx) = suggestedLoop
+                    end if
+
+                    ! Now force the channel and modes
+                    ! NOTE: "cbr" is setup as a channel probability associated with
+                    !       a random sampling; setting = 1 will force that channel.
+                    !       If we overwrite a mapping, subsequent data rows for
+                    !       that channel will be abandoned, if any exist.
+                    obj%cbrDat(suggestedLoop) = one
+                    obj%modeDat(1 : numForcedModes, suggestedLoop) = forcedChannelDecays(1 : numForcedModes, i)
+                    if (numForcedModes < 5) then
+                       obj%modeDat(numForcedModes : 5, suggestedLoop) = 0_int32
+                    end if
+                 end if forcedExceeded
+              end do forcedModes
+           end if mappingsAvailable
+        end if forcedChannelsProvided
+    end if useDecay
     return
   end function new_DecayChannels
 
