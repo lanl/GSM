@@ -175,6 +175,7 @@
 !      PMEMO(2,M)=(P1(2)+P2(2))/2.+RL(2)-PMEMO(5,M)/ELM*TAUL
 !      PMEMO(3,M)=(P1(3)+P2(3))/2.+RL(3)-PMEMO(6,M)/ELM*TAUL
     dr=rint*rndm(-1.0_real64)**(1./3.) ! rndm assumed > 0; no err_chk.
+    ! TODO: Search for 6.28 and replace w/ twpi
     fi=6.283185*rndm(-1.0_real64)
     ct=1.-2.*rndm(-1.0_real64)
     temp1 = 1.-ct**2

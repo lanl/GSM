@@ -1102,6 +1102,7 @@
     pn=sqrt(tn*(tn+1.88))
     ct=1.-2.*rndm(-1.0_real64)
     st=sqrt(1.-ct*ct)
+    ! TODO: Replace w/ twpi!
     fi=6.283185*rndm(-1.0_real64)
     cf=cos(fi)
     sf=sin(fi)
