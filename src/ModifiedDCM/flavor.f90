@@ -55,7 +55,7 @@
     ! Interim variables
     integer(int32) :: &
         & IDABS   ! Absolute value of the reaction ID
-    integer(int32) :: I, J, K
+    integer(int32) :: I, J, K, switchType, switchType2
 
 ! ======================================================================
 
@@ -76,98 +76,103 @@
     JSPIN = MOD(IDABS, 10)
 
     ! Evaluate which processing should be executed for the ID
-    IF(ID /= 0 .AND. MOD(ID, 100) == 0) GO TO 300
-    IF(J == 0) GO TO 200
-    IF(I == 0) GO TO 100
+    switchType = 0
+    IF(ID /= 0 .AND. MOD(ID, 100) == 0) switchType = 300
+    IF(J == 0 .AND. switchType == 0) switchType = 200
+    IF(I == 0 .AND. switchType == 0) switchType = 100
 
-    ! BARYONS
-    !    ONLY X,Y BARYONS ARE QQX, QQY, Q=U,D,S.
-    IFL1=ISIGN(I,ID)
-    IFL2=ISIGN(J,ID)
-    IFL3=ISIGN(K,ID)
-    ! Determine INDX identifier
-    INDX = MAX0(I - 1, J - 1)**2 + I + MAX0(I - J, 0)
-    IF(K <= 6) then
-       INDX = INDX + K * (K - 1) * (2 * K - 1) / 6
-    else
-       INDX = INDX + 9 * (K - 7) + 91
-    end if
-    INDX = INDX + 109 * JSPIN + 36 * NMES + NQLEP + 11
-    return
+    select case (switchType)
+       case (100);
+          ! Mesons
+          IFL1 = 0
+          IFL2 = ISIGN(J,  ID)
+          IFL3 = ISIGN(K, -ID)
+          INDX = J + K * (K - 1) / 2 + 36 * JSPIN + NQLEP + 11
 
-    ! MESONS
-100 CONTINUE
-    IFL1 = 0
-    IFL2 = ISIGN(J,  ID)
-    IFL3 = ISIGN(K, -ID)
-    INDX = J + K * (K - 1) / 2 + 36 * JSPIN + NQLEP + 11
-!@@@@@@@@@@@@@ SIVOKL - TONEEV @@@@@
-    IF(ID == 110 .OR. ID == 111 .OR. ID == 221) GO TO 13
-    IF(ID == 220 .OR. ID == 330) GO TO 12
-    RETURN
+          !@@@@@@@@@@@@@ SIVOKL - TONEEV @@@@@
+          switchType2 = 0
+          IF(ID == 110 .OR. ID == 111 .OR. ID == 221) switchType2 = 13
+          IF((ID == 220 .OR. ID == 330) .AND. switchType2 == 0) switchType2 = 12
 
-12  CONTINUE
-    IFL2 = 2 +INT(0.25 + RNDM(-1.))
-    IF(IFL2 == 2) IFL2 = 1 + INT(0.5 + RNDM(-1.))
-    IFL2 = ISIGN(IFL2,  ID)
-    IFL3 = ISIGN(IFL2, -ID)
+          select case (switchType2)
+             case (12);
+                IFL2 = 2 +INT(0.25 + RNDM(-1.))
+                IF(IFL2 == 2) IFL2 = 1 + INT(0.5 + RNDM(-1.))
+                IFL2 = ISIGN(IFL2,  ID)
+                IFL3 = ISIGN(IFL2, -ID)
 
-    IF(NFLA == -1) THEN
-       NFL1 = IFL1
-       NFL2 = IFL2
-       NFL3 = IFL3
-       NSPIN = JSPIN
-       NNDEX = INDX
-       NFLA = ID
-    ENDIF
-    RETURN
+                IF(NFLA == -1) THEN
+                   NFL1 = IFL1
+                   NFL2 = IFL2
+                   NFL3 = IFL3
+                   NSPIN = JSPIN
+                   NNDEX = INDX
+                   NFLA = ID
+                ENDIF
 
-13  CONTINUE
-    IFL2 = 1 + INT(0.5 + RNDM(-1.))
-    IFL2 = ISIGN(IFL2,ID)
-    IFL3 = ISIGN(IFL2,-ID)
+             case (13);
+                IFL2 = 1 + INT(0.5 + RNDM(-1.))
+                IFL2 = ISIGN(IFL2,ID)
+                IFL3 = ISIGN(IFL2,-ID)
 
-    IF(NFLA == -1) THEN
-       NFL1 = IFL1
-       NFL2 = IFL2
-       NFL3 = IFL3
-       NSPIN = JSPIN
-       NNDEX = INDX
-       NFLA = ID
+                IF(NFLA == -1) THEN
+                   NFL1 = IFL1
+                   NFL2 = IFL2
+                   NFL3 = IFL3
+                   NSPIN = JSPIN
+                   NNDEX = INDX
+                   NFLA = ID
 ! in the next line NFLB was not defined 11.16.94 V.T. !
-!     ELSE IF(NFLB == -1) THEN
-!        MFL1 = IFL1
-!        MFL2 = IFL2
-!        MFL3 = IFL3
-!        MSPIN = JSPIN
-!        MNDEX = INDX
-!        NFLB = ID
-    ENDIF
-!@@@@@@@@@@@@@@@@@@@@
-    RETURN
+!                 ELSE IF(NFLB == -1) THEN
+!                    MFL1 = IFL1
+!                    MFL2 = IFL2
+!                    MFL3 = IFL3
+!                    MSPIN = JSPIN
+!                    MNDEX = INDX
+!                    NFLB = ID
+                ENDIF
+          end select
 
-200 CONTINUE
-    IFL1 = 0
-    IFL2 = 0
-    IFL3 = 0
-    JSPIN = 0
-    INDX = IDABS
-    IF(IDABS < 20) RETURN
+       case (200);
+          IFL1 = 0
+          IFL2 = 0
+          IFL3 = 0
+          JSPIN = 0
+          INDX = IDABS
+          IF(IDABS < 20) RETURN
 
-    ! DEFINE INDX=20 FOR KS, INDX=21 FOR KL
-    INDX = IDABS + 1
-    IF(ID == 20) INDX = 20
-    ! INDX = NQLEP + 1, ... , NQLEP + 11 FOR W+, HIGGS, Z0
-    IF(IDABS < 80) RETURN
-    INDX = NQLEP + IDABS - 79
-    RETURN
+          ! DEFINE INDX=20 FOR KS, INDX=21 FOR KL
+          INDX = IDABS + 1
+          IF(ID == 20) INDX = 20
+          ! INDX = NQLEP + 1, ... , NQLEP + 11 FOR W+, HIGGS, Z0
+          IF(IDABS < 80) RETURN
+          INDX = NQLEP + IDABS - 79
 
-300 CONTINUE
-    IFL1 = ISIGN(I, ID)
-    IFL2 = ISIGN(J, ID)
-    IFL3 = 0
-    JSPIN=0
-    INDX=0
-    RETURN
+      case (300);
+          IFL1 = ISIGN(I, ID)
+          IFL2 = ISIGN(J, ID)
+          IFL3 = 0
+          JSPIN=0
+          INDX=0
+
+      case default;
+          ! BARYONS
+          !    ONLY X,Y BARYONS ARE QQX, QQY, Q=U,D,S.
+          IFL1=ISIGN(I,ID)
+          IFL2=ISIGN(J,ID)
+          IFL3=ISIGN(K,ID)
+
+          ! Determine INDX identifier
+          INDX = MAX0(I - 1, J - 1)**2 + I + MAX0(I - J, 0)
+          IF(K <= 6) then
+             INDX = INDX + K * (K - 1) * (2 * K - 1) / 6
+          else
+             INDX = INDX + 9 * (K - 7) + 91
+          end if
+          INDX = INDX + 109 * JSPIN + 36 * NMES + NQLEP + 11
+
+    end select
+
+    return
   end subroutine flavor
 
