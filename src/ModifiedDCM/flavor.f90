@@ -77,9 +77,9 @@
 
     ! Evaluate which processing should be executed for the ID
     switchType = 0
-    IF(ID /= 0 .AND. MOD(ID, 100) == 0) switchType = 300
-    IF(J == 0 .AND. switchType == 0) switchType = 200
-    IF(I == 0 .AND. switchType == 0) switchType = 100
+    if (ID /= 0 .AND. MOD(ID, 100) == 0) switchType = 300
+    if (J == 0 .AND. switchType == 0) switchType = 200
+    if (I == 0 .AND. switchType == 0) switchType = 100
 
     select case (switchType)
        case (100);
@@ -91,17 +91,17 @@
 
           !@@@@@@@@@@@@@ SIVOKL - TONEEV @@@@@
           switchType2 = 0
-          IF(ID == 110 .OR. ID == 111 .OR. ID == 221) switchType2 = 13
-          IF((ID == 220 .OR. ID == 330) .AND. switchType2 == 0) switchType2 = 12
+          if (ID == 110 .OR. ID == 111 .OR. ID == 221) switchType2 = 13
+          if ((ID == 220 .OR. ID == 330) .AND. switchType2 == 0) switchType2 = 12
 
           select case (switchType2)
              case (12);
                 IFL2 = 2 +INT(0.25 + RNDM(-1.))
-                IF(IFL2 == 2) IFL2 = 1 + INT(0.5 + RNDM(-1.))
+                if (IFL2 == 2) IFL2 = 1 + INT(0.5 + RNDM(-1.))
                 IFL2 = ISIGN(IFL2,  ID)
                 IFL3 = ISIGN(IFL2, -ID)
 
-                IF(NFLA == -1) THEN
+                if (NFLA == -1) THEN
                    NFL1 = IFL1
                    NFL2 = IFL2
                    NFL3 = IFL3
@@ -115,7 +115,7 @@
                 IFL2 = ISIGN(IFL2,ID)
                 IFL3 = ISIGN(IFL2,-ID)
 
-                IF(NFLA == -1) THEN
+                if (NFLA == -1) THEN
                    NFL1 = IFL1
                    NFL2 = IFL2
                    NFL3 = IFL3
@@ -123,7 +123,7 @@
                    NNDEX = INDX
                    NFLA = ID
 ! in the next line NFLB was not defined 11.16.94 V.T. !
-!                 ELSE IF(NFLB == -1) THEN
+!                 ELSE if (NFLB == -1) THEN
 !                    MFL1 = IFL1
 !                    MFL2 = IFL2
 !                    MFL3 = IFL3
@@ -139,14 +139,16 @@
           IFL3 = 0
           JSPIN = 0
           INDX = IDABS
-          IF(IDABS < 20) RETURN
+          if (IDABS >= 20) then
 
-          ! DEFINE INDX=20 FOR KS, INDX=21 FOR KL
-          INDX = IDABS + 1
-          IF(ID == 20) INDX = 20
-          ! INDX = NQLEP + 1, ... , NQLEP + 11 FOR W+, HIGGS, Z0
-          IF(IDABS < 80) RETURN
-          INDX = NQLEP + IDABS - 79
+             ! DEFINE INDX=20 FOR KS, INDX=21 FOR KL
+             INDX = IDABS + 1
+             if (ID == 20) INDX = 20
+             ! INDX = NQLEP + 1, ... , NQLEP + 11 FOR W+, HIGGS, Z0
+             if (IDABS >= 80) then
+                INDX = NQLEP + IDABS - 79
+             end if
+          end if
 
       case (300);
           IFL1 = ISIGN(I, ID)
@@ -164,7 +166,7 @@
 
           ! Determine INDX identifier
           INDX = MAX0(I - 1, J - 1)**2 + I + MAX0(I - J, 0)
-          IF(K <= 6) then
+          if (K <= 6) then
              INDX = INDX + K * (K - 1) * (2 * K - 1) / 6
           else
              INDX = INDX + 9 * (K - 7) + 91
