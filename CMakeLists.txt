@@ -5,6 +5,8 @@
 #   GSM.BUILD_DOCS    [ON]                Creates an API documentation build target
 #   GSM.SIM_DIR       [ON]                Creates simulation directory build target
 #   GSM.MPI           [OFF]               Builds GSM with MPI enabled
+#   GSM.OpenMP        [OFF]               Builds GSM with OpenMP enabled
+#   GSM.OpenACC       [OFF]               Builds GSM with OpenACC enabled
 #   GSM.PACK          [on]                Packages GSM
 #   GSM.SHARED        [BUILD_SHARED_LIBS] Builds GSM with shared libraries
 #   GSM.TEST          [ON]                Enables testing of GSM via CTest
@@ -15,7 +17,7 @@
 #
 # ============================================================================ #
 cmake_minimum_required (VERSION 3.8.0)
-project(gsm
+project(GSM
   VERSION 1.1.0
   LANGUAGES Fortran
   )

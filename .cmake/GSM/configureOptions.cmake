@@ -25,6 +25,9 @@ add_option("MPI"
 add_option("OpenMP"
   "Compile ${PROJECT_NAME} with OpenMP"
   OFF)
+add_option("OpenACC"
+  "Compile ${PROJECT_NAME} with OpenACC"
+  OFF)
 add_option("PACKAGE"
   "Package ${PROJECT_NAME}"
   ON)
@@ -56,6 +59,10 @@ endif()
 
 if(${PROJECT_NAME}.OpenMP)
   include (loadOpenMP)
+endif()
+
+if(${PROJECT_NAME}.OpenACC)
+  include (loadOpenACC)
 endif()
 
 if(${PROJECT_NAME}.PACKAGE)
