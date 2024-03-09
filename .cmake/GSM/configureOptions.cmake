@@ -25,9 +25,12 @@ add_option("MPI"
 add_option("OpenMP"
   "Compile ${PROJECT_NAME} with OpenMP"
   OFF)
-add_option("OpenACC"
-  "Compile ${PROJECT_NAME} with OpenACC"
-  OFF)
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10")
+  # Note: for CMake < 3.10, just assume OpenACC is unavailable
+  add_option("OpenACC"
+    "Compile ${PROJECT_NAME} with OpenACC"
+    OFF)
+endif()
 add_option("PACKAGE"
   "Package ${PROJECT_NAME}"
   ON)
