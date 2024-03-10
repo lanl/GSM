@@ -27,6 +27,12 @@ if (${PROJECT_NAME}.SIM_DIR)
        "${CMAKE_SOURCE_DIR}/${simDir}/"
     )
 
+  # The simulation directory will depend on any files mentioned above.
+  # Ensure we add dependencies to those.
+    add_dependencies(${simDir}
+      "x${PROJECT_NAME}${PROJECT_VERSION_MAJOR}"
+      )
+
 endif()
 
 

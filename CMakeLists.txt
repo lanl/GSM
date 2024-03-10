@@ -59,6 +59,7 @@ add_subdirectory(Docs EXCLUDE_FROM_ALL)
 # Configure executable
 #
 # ============================================================================ #
+# NOTE: Simulation directory inclusion depends on this naming convention.
 set (exec "x${PROJECT_NAME}${PROJECT_VERSION_MAJOR}")
 
 # Set main executable's sources and dependencies
