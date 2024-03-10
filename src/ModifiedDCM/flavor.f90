@@ -113,6 +113,7 @@
        ! Update certain characteristics and set simulation values for specific
        ! particles
        if (ID == 110 .OR. ID == 111 .OR. ID == 221) then
+          ! IFL2 will be either 1 or 2, equally distributed
           IFL2 = 1 + INT(0.5 + RNDM(-1.))
           IFL2 = ISIGN(IFL2,ID)
           IFL3 = ISIGN(IFL2,-ID)
@@ -134,6 +135,7 @@
 !              NFLB = ID
           endif
        elseif ((ID == 220 .OR. ID == 330)) then
+          ! IFL2 will be "3" 25% of time, and either 1 or 2 equally the rest
           IFL2 = 2 +INT(0.25 + RNDM(-1.))
           if (IFL2 == 2) IFL2 = 1 + INT(0.5 + RNDM(-1.))
           IFL2 = ISIGN(IFL2,  ID)
