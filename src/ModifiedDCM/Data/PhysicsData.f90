@@ -7,8 +7,10 @@
 
 module modifiedDCMData
 
-  use, intrinsic:: iso_fortran_env, only: int32, real64
-  use modifiedDCMParams, only: degreeToRad
+  use, intrinsic:: iso_fortran_env, only: int32, real64, output_unit
+  use modifiedDCMParams, only: one, degreeToRad
+  use Contracts
+#include "../../Utilities/Contracts/contract_macros.fpp"
   implicit none
   private
 
@@ -22,15 +24,13 @@ module modifiedDCMData
   integer(int32), public :: mDCMVerbose = defaultMDCMDataVerbose
 
   ! For the photon file:
-  integer(int32),   private           :: decayUnit        = -1_int32
   character(len=*), public, parameter :: defaultPhotoFile = "channel1.tab"
   character(len=*), public, parameter :: defaultDecayFile = "atab.dat"
 
-  character(len=128), private :: effectiveDecayFile = defaultDecayFile
-
   ! For checking that a residual is of valid size:
-  integer(int32), public, parameter :: numNuclideLimits = 135
-  integer(int32), public, parameter, dimension(numNuclideLimits) :: jamin = [ &
+  integer(int32), private, parameter :: numNuclideLimits = 135
+  integer(int32), private, parameter, dimension(numNuclideLimits) :: &
+       & jaminDat = [ &
        &   1,        2,      3,      4,      5,      6,      7, &
        &   8,        9,     11,     13,     15,     17,     19, &
        &  22,       23,     25,     27,     29,     29,     32, &
@@ -51,7 +51,8 @@ module modifiedDCMData
        & 287,      290,    294,    297,    300,    303,    306, &
        & 310,      313,    316,    319,    323,    326,    329, &
        & 332,      336 ]
-  integer(int32), public, parameter, dimension(numNuclideLimits) :: jamax = [ &
+  integer(int32), private, parameter, dimension(numNuclideLimits) :: &
+       & jamaxDat = [ &
        &  12,       14,     17,     22,     25,     28,     31, &
        &  34,       39,     44,     47,     54,     55,     60, &
        &  61,       68,     69,     74,     75,     80,     81, &
@@ -74,24 +75,65 @@ module modifiedDCMData
        & 339,      339 ]
 
   ! For radius of projectile/target w/ [2 < A <= 10]
-  real(real64), public, parameter, dimension(10) :: rms = [ &
+  ! TODO: Use r_rms module instead?
+  real(real64), private, parameter, dimension(10) :: rmsDat = [ &
        & 0.85, 2.095, 1.976, 1.671, 2.50, 2.57, 2.45, 2.519, 2.45, 2.42 ]
 
   ! For photon cross section information:
   integer(int32), private, parameter :: numThetaBins = 19
   real(real64),   private, parameter :: dtheta = (180.0_real64) / dble(numThetaBins - 1_int32)
-  real(real64),   public,  parameter, dimension(numThetaBins) :: &
-       & theta  = [ (dble(j-1)*dtheta,          j=1, numThetaBins) ]
-  real(real64),   public,  parameter, dimension(numThetaBins) :: &
-       & ctheta = [ (cos(theta(j))*degreeToRad, j=1, numThetaBins) ]
+  real(real64),   private,  parameter, dimension(numThetaBins) :: &
+       & thetaDat  = [ (dble(j-1)*dtheta,          j=1, numThetaBins) ]
+  real(real64),   private,  parameter, dimension(numThetaBins) :: &
+       & cthetaDat = [ (cos(thetaDat(j))*degreeToRad, j=1, numThetaBins) ]
   ! For photon data read from the file:
   ! Note these arrays use ~180 kB.
   !> \brief Cross section data (size of [22, 50, 0:18])
-  real(real64),   public, protected, dimension(:, :, :), allocatable :: xsectd
+  real(real64),   private, dimension(:, :, :), allocatable :: xsectdDat
   !> \brief Center of mass energy? (size of [22, 50])
-  real(real64),   public, protected, dimension(:, :), allocatable :: ecm
+  real(real64),   private, dimension(:, :), allocatable :: ecmDat
   !> \brief elg (size of [22, 50])
-  real(real64),   public, protected, dimension(:, :), allocatable :: elg
+  real(real64),   private, dimension(:, :), allocatable :: elgDat
+
+
+  ! For decay data read from the file:
+  !> \brief Indicates if decay channels will be simulated.
+  type, public :: decayChannels
+     private
+     !> \brief Indicates that decay should be modelled
+     logical, private :: modelDecayOpt = .true.
+
+     !> \brief look decay data (size of 400)
+     integer(int32), private, dimension(:), allocatable :: lookDat
+
+     !> \brief cbr decay data (size of 600)
+     real(real64),   private, dimension(:), allocatable :: cbrDat
+
+     !> \brief mode decay data (size of 5, 600)
+     integer(int32), private, dimension(:, :), allocatable :: modeDat
+
+     !> \brief Indicates the number of entries in the class arrays
+     integer(int32), private :: numEntriesDat = 0_int32
+  contains
+     private
+     procedure, private :: allocateData
+
+     ! Interface channels
+     procedure, public :: modelDecay
+     procedure, public :: look
+     procedure, public :: cbr
+     procedure, public :: mode
+
+  end type decayChannels
+
+  !> \brief decayChannels object constructor
+  public :: newDecayChannels
+  interface newDecayChannels
+     module procedure :: new_DecayChannels
+  end interface
+
+  !> \brief Internal decay channel data; used to create new objects
+  type(decayChannels), private :: defaultChannels
 
 
   ! For message handling:
@@ -112,24 +154,35 @@ module modifiedDCMData
   type(mDCMDataIO), private :: dataIO
 
 
+  ! Data interface methods (e.g., accessing data arrays)
+  public  :: jamin
+  public  :: jamax
+  public  :: rms
+  public  :: theta
+  public  :: ctheta
+  public  :: xsectd
+  public  :: ecm
+  public  :: elg
 
   ! Module procedures:
   public  :: initializeModifiedDCMData
   private :: initam
-  private :: setcon
-  private :: setdky           ! Reads the effective decay data file
   private :: readPhotonData   ! Reads the effective photon data file
+  private :: readDecayData    ! Reads the effective decay data file
   private :: printMDCM
 
 contains
 
 ! ====================================================================
 
-  include "initializeModifiedDCMData.f90"
-  include "initam.f90"
-  include "readPhotonData.f90"
+#include "initializeModifiedDCMData.f90"
+#include "initam.f90"
+#include "readPhotonData.f90"
+#include "readDecayData.f90"
+#include "interfaceFunctions.f90"
+#include "decayChannelInterface.f90"
 
-  include "../printMDCM.f90"
+#include "../printMDCM.f90"
 
 ! ====================================================================
 

@@ -19,7 +19,7 @@
   end type mDCMOptions
 
 
-
+  ! Replaces the "memoryLAQ" common block (once in array)
   type, public :: mDCMProgeny
      private
      ! Particle ID:
@@ -43,16 +43,8 @@
   end type mDCMProgeny
 
 
-  type, public :: mDCMResidual
-     private
-     real(real64), public :: numBaryons = 0.0_real64
-     real(real64), public :: numProtons = 0.0_real64
-     real(real64), public :: kinEnergy  = 0.0_real64   ! Kinetic energy of fragment [GeV]
-     real(real64), public, dimension(3) :: linearMom  = 0.0_real64
-     real(real64), public, dimension(3) :: angularMom = 0.0_real64
-  end type mDCMResidual
-
-
+  ! Review "holpt" common block - this may need incorporated here or a similar
+  ! object
   type, public :: mDCMExciton
      private
      integer(int32), public :: numTotal    = 0_int32
@@ -76,7 +68,7 @@
      ! Exciton information:
      type(mDCMExciton), public  :: targExc
      type(mDCMExciton), public  :: projExc
-     
+
      ! Misc. simulation data:
      integer(int32), public  :: numElastic = 0_int32
      integer(int32), public  :: simState = 0_int32

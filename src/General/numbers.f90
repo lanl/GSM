@@ -74,6 +74,7 @@ module numbers
        &  natural_num      = exp(one),                   &
        &  euler            = .577215664901532861_real64, & != Euler constant.
        &  LnTwo            = .693147180559945309_real64, & != Natural logarithm of 2.
+       &  degreeToRad       = pi / one_eighty,           & != Converts degrees to radians
        &  SqrtTwo          = 1.41421356237309505_real64    != Square root of 2.
   !---------------------------------------------------------------------------------------
 

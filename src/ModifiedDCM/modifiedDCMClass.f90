@@ -8,6 +8,8 @@
 module modifiedDCMClass
 
   use, intrinsic:: iso_fortran_env, only: int32, real64
+  use numbers
+  use mDCMChildTypes
   implicit none
   private
 
@@ -25,6 +27,7 @@ module modifiedDCMClass
 
   ! Procedure interfaces:
   abstract interface
+     ! Interface for I/O handling
      subroutine IOHANDLER(verbosity, type, text)
        use, intrinsic:: iso_fortran_env, only: int32
        implicit none
@@ -32,13 +35,13 @@ module modifiedDCMClass
        integer(int32),   intent(in) :: type
        character(len=*), intent(in) :: text
      end subroutine IOHANDLER
+     ! Interface for a random number generator
      function RANDOM() result(rndmNum) BIND(C)
        use, intrinsic:: iso_C_binding, only: c_double
        implicit none
        real(c_double) :: rndmNum
      end function RANDOM
   end interface
-
 
 
   ! Constructor interfaces:
@@ -58,7 +61,7 @@ module modifiedDCMClass
 
   ! FOR CLIENTS TO USE MDCM [NOT PARALLELIZED]
   type(mDCMResults), public :: results
-  
+
 
   type, public :: ModifiedDCM
      private
@@ -74,7 +77,7 @@ module modifiedDCMClass
      ! Data objects:
      ! ---  N/A  --- (at this time)
 
-     ! RNG:
+     ! Random number generator
      procedure(RANDOM), private, nopass, pointer :: rang => NULL()
 
      ! NOTE: Results and calculation data types are created in the main routine,
@@ -120,7 +123,7 @@ contains
   include "new_ModifiedDCM.f90"
   include "new_Results.f90"
 
-  ! Querying the object:
+  ! Querying the objects:
   include "mDCMAccess.f90"
 
   ! For reaction setup:

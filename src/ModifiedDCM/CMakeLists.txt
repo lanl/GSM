@@ -15,7 +15,10 @@ set(model_name "Modified_DCM")
 set(sources
   ${CMAKE_CURRENT_LIST_DIR}/Parameters/Parameters.f90
   ${CMAKE_CURRENT_LIST_DIR}/Data/PhysicsData.f90
+  ${CMAKE_CURRENT_LIST_DIR}/ModelData/modifiedDCMDataClass.f90
+  ${CMAKE_CURRENT_LIST_DIR}/ChildTypes/mDCMChildTypes.f90
   ${CMAKE_CURRENT_LIST_DIR}/modifiedDCMClass.f90
+  ${CMAKE_CURRENT_LIST_DIR}/flavor.f90
   ${CMAKE_CURRENT_LIST_DIR}/LAQ2.f
   ${CMAKE_CURRENT_LIST_DIR}/tallyFragment.f90
   ${CMAKE_CURRENT_LIST_DIR}/cascaw.f90
@@ -31,7 +34,9 @@ set(sources
 
 # List the sub-model's dependencies
 set(dependencies
+  General
   Random_Number_Generator
+  Contracts
   Standard_DCM
   )
 

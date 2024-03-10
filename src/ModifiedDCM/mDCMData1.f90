@@ -1855,13 +1855,10 @@
 
 ! ====================================================================
 !        INITIALIZE ALL COMMON BLOCKS
-    common/itapes/itdky,itevt,itcom,itlis
     common/force/ nforce,iforce(20),mforce(5,20)
 !     LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
     common/dkytab/look(400),cbr(600),mode(5,600)
     common/idrun/idver,idg(2),ievt
-    logical nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
-    common/nodcay/nodcay,noeta,nopi0,nonunu,noevol,nohadr,noka0
     common/primar/scm,halfe,ecm,njet,idin(2),nevent,ntries
     common/prtout/nevprt,njump
     logical keys,keyon
@@ -1874,10 +1871,6 @@
     logical nocol
     common/commul/ multp
     logical multp
-    common/notre/ notre
-    logical notre
-    common /prints/ iprint
-    logical iprint
     common/primp0/ p0
     common/primpl/ pl
     common/comrii/ r12,r1,r2
@@ -1936,19 +1929,8 @@
 !          IDVER=100*VERSION+CYCLE
     data idver/102/,idg/2*0/,ievt/0/
 !
-!          DATA FOR ITAPES
-    data itdky,itevt,itcom,itlis/8,17,15,29/
 !          DATA FOR LSTPRT
     data lstprt/0/
-!          DATA FOR NODCAY
-    data nodcay/.false./,noeta/.false./,noka0/.true./
-    data nopi0,nonunu,noevol,nohadr/4*.true./
-!
-!          DATA FOR NOTRE
-    data notre/.true./
-!
-!          DATA FOR PRINTS
-    data iprint/.false./
 !
 !          DATA FOR PRIMAR
     data idin/1120,1120/,halfe/10./,scm/400./,ecm/20./

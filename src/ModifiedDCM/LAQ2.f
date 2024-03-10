@@ -11,7 +11,7 @@ c
 c          laqgsm2007_2.f   subroutines :
 ******************************************************************
 c
-c last changes by KKG for interface with MARS code       23.03.07                      
+c last changes by KKG for interface with MARS code       23.03.07
 c     last correction in CLUSLE, REP/KKG, Oct. 2004
 c     sigma=0.51             G. 25.05.01
 C   * * * * * * * * *  11-16-94 03:27PM  MV <==> 5999 * * * * * *
@@ -757,6 +757,7 @@ C----  FOR MESON-MESON COLLISION
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE ANG(TFOR,TBACK,T,Z,PHI)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C   ANG CALCULATES (RANDOMLY) THE POLAR AND AZIMUTHAL SCATTERING ANGLES
@@ -770,7 +771,6 @@ C
       COMMON /COMKI2/ELA,ELB,PLALB
       COMMON /CALC/HA,HB,HA2,HB2
       COMMON /BEES/B,BFOR
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
       S=W**2
       EA=(S+HA2-HB2)/(2.0*W)
       EB=(S+HB2-HA2)/(2.0*W)
@@ -794,15 +794,15 @@ C
       IF(Z.LT.-1.0) Z=-1.0
       IF(Z.GT.1.0) Z=1.0
       R4=RNDM(-1.)
-      PHI=2.0*PI*R4
+      PHI=twpi*R4
       RETURN
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE ELZPLE(IK1,IK2,TKIN,Z,PHI,IEXE)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       IF(IEXE.EQ.0) GO TO 1
        Z=COSP(TKIN,12)
        RETURN
@@ -997,7 +997,6 @@ c
 C  COMPUTE FIXED PARTICLE MASS
       COMMON /DATA1/CMIX(6,2),PMASM(18),PMASB(18),PGAMM(18),
      *PGAMB(18),MESO(9,2)
-      COMMON /ISOB3/ISOB3
       IF(IK-36) 1,1,2
  1    AMASF=PMASM(IK)
       RETURN
@@ -1014,23 +1013,21 @@ C  COMPUTE PARTICLE MASS
       COMMON /ISOB3/ISOB3
       COMMON /INTTYP/ITYP
       COMMON /ITHEA/ITHEA(11)
-      IF(IK-36) 1,1,3
- 1    AMAS=PMASM(IK)
-      IF(IK.EQ.10.OR.IK.EQ.11.OR.IK.EQ.16) GO  TO  2
-      RETURN
- 2    IF(ISOB3.NE.1)  RETURN
-      CALL MRHO(AMR,GD)
-      AMAS=AMR
-      RETURN
- 3    AMAS=PMASB(IK-36)
-      IF(IK.LT.45.OR.IK.GT.48) RETURN
-      IF(ISOB3.NE.1)  RETURN
-1991  CONTINUE
-C     IF((ITHEA(8).EQ.1).OR.(ITYP.EQ.3))  THEN
-C           CALL  MDELT1(AMD,GD)
-C     ELSE
-            CALL  MDELTA(AMD,GD)
-C     ENDIF
+      if ((ik - 36) <= 0) then
+         AMAS=PMASM(IK)
+         if (( IK /= 10 .AND. IK /= 11 .AND. IK /= 16) .OR.
+     *(isob3 /= 1)) then
+            return
+         end if
+         CALL MRHO(AMR,GD)
+         AMAS=AMR
+         RETURN
+      else
+         AMAS=PMASB(IK-36)
+         IF(IK < 45 .OR. 48 < IK) RETURN
+         IF(ISOB3.NE.1)  RETURN
+      end if
+      CALL  MDELTA(AMD,GD)
       AMAS=AMD
       RETURN
       END
@@ -1479,6 +1476,7 @@ C  SIMULATION OF Z DISTRIBUTION FROM U(Z)=1.-CX2+3.*CX2*(1.-Z)**2
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CLUSLE(IFL1,IFL2,KSD,AMCTR)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS CLUSTER BREAKING
@@ -1491,7 +1489,6 @@ C  AMCTR IS MASS OF CLUSTER
       LOGICAL IPRINT
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON /PRODMA/ PPMAS(50)
       DIMENSION IFL(2),U(3)
       DOUBLE PRECISION PCM,A,B,C
@@ -1559,7 +1556,7 @@ C     PROB=2.*PA/AMCTR
 C   PROB IS TWO-BODY PHASE SPACE FACTOR
 C     IF(RNDM(-1.).GT.PROB) GO TO 100
       U(3)=2.*RNDM(-1.)-1.
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       ST=SQRT(1.-U(3)**2)
       U(1)=ST*COS(PHI)
       U(2)=ST*SIN(PHI)
@@ -1597,13 +1594,13 @@ C   GENERATE DISTRIBUTION WITH 1/(1+B*PT**2)**4
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE PTDGET(PX,PY,SIGMA)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-      COMMON/CONST/ PI,SQRT2,ALF,GF,UNITS
 C   GENERATE DISTRIBUTION WITH 1/(1+B*PT**2)**4
       DATA CON1/1.697652726/,CON2/-.3333333333/
       PT0=CON1*SIGMA*SQRT(RNDM(-1.)**CON2-1.)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX=PT0*COS(PHI)
       PY=PT0*SIN(PHI)
       RETURN
@@ -1948,6 +1945,7 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CYLLE(IK1,IB1,AM1,IK2,IB2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C  CALCULATION OF CYLINDRICAL GRAPH
@@ -1958,7 +1956,6 @@ C
       COMMON /PRODT/ IORD(50)
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON /COMCUT/ PARM,PARB,SWMAX
       COMMON /COLRET/ LRET
       DIMENSION P1(3),NIN(2),NFIN(2),VS1(3),VS2(3)
@@ -2033,14 +2030,14 @@ C  MOMENTUM OF QUARKS
       PZ33=-P1(3)*X3
       PZ44=-P1(3)*X4
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   160 CALL GETPT(PT1,SIGMAI)
       AMQ21=AZ12*(AZ12+4.*X1*X2*PZER2)/(4.*(PZER2+AZ12))-PT1**2
       PX11=PT1*COS(PHI)
       PY11=PT1*SIN(PHI)
       PX22=-PX11
       PY22=-PY11
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   170 CALL GETPT(PT3,SIGMAI)
       AMQ22=AZ22*(AZ22+4.*X3*X4*PZER2)/(4.*(PZER2+AZ22))-PT3**2
       PX33=PT3*COS(PHI)
@@ -2170,6 +2167,7 @@ C  RETURN IN OVERALL CM FRAME
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE UNCYLE(IK1,IB1,AM1,IK2,IB2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE UNDEVELOPED CYLINDER DIAGRAM
@@ -2182,7 +2180,6 @@ C
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /COMCUT/ PARM,PARB,SWMAX
       COMMON /COLRET/ LRET
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON /PRODMA/ PPMAS(50)
       DIMENSION V(3),P1(3)
       DIMENSION NIN(2),NFIN(2)
@@ -2236,14 +2233,14 @@ C    COMPUTE X VALUES FOR PARTONS
       X33=XDIST(XMIN,IB2,IS2,IFL33S)
       X44=1.-X33
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   160 CALL GETPT(PT11,SIGMAI)
       AMQ21=AZ12*(AZ12+4.*X11*X22*PZER2)/(4.*(PZER2+AZ12))-PT11**2
       PX11=PT11*COS(PHI)
       PY11=PT11*SIN(PHI)
       PX22=-PX11
       PY22=-PY11
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
   170 CALL GETPT(PT33,SIGMAI)
       AMQ22=AZ22*(AZ22+4.*X33*X44*PZER2)/(4.*(PZER2+AZ22))-PT33**2
       PX33=PT33*COS(PHI)
@@ -2437,6 +2434,7 @@ C    COMPUTE PT VALUES FOR PARTONS
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFSCA(IFL01,IFL02,KS01,IK1,AM1,
      *IFL03,IFL04,KS02,IK2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -2451,7 +2449,6 @@ C
       COMMON /COMLD/ PLDER(50)
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
       COMMON /COMCUT/ PARM,PARB,SWMAX
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
       DIMENSION V(3),P1(3)
       DIMENSION PPX1(3),PPX2(3),PRX1(3),PRX2(3)
       DIMENSION GAMA(3),AMR(3)
@@ -2516,11 +2513,11 @@ C    COMPUTE X VALUES FOR PARTONS
 C     COMPUTE PT VALUE FOR HADRON
 140   CONTINUE
       CALL GETPT(PT1,SIGMA2)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX1=PT1*COS(PHI)
       PY1=PT1*SIN(PHI)
       CALL GETEXP(PT,SIGMA1)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTX=PT*COS(PHI)
       PTY=PT*SIN(PHI)
       PX2=-PX1+PTX
@@ -2928,17 +2925,17 @@ C  CALCULATION OF RESONANCE CROSS SECTION
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION WIDTLE(GAM)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
 C   COMPUTE WIDTH OF PARTICLE
 C
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
       SIGMA=GAM
 100   DRND=RNDM(-1.)
       IF(DRND.LT.1.0D-10)      GO TO 100
       GT=SIGMA*SQRT(-LOG(DRND))
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       WIDTLE=GT*COS(PHI)
       IF(ABS(WIDTLE).GT.GAM) GO TO 100
       RETURN
@@ -2961,9 +2958,9 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
         SUBROUTINE XDIST2(X1,X2)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-        COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
 C         U(X)=1./SQRT(X1*X2)*DELTA(1.-X1-X2)
           X1=0.5+0.5*SIN(PI*(RNDM(-1.)-0.5))
           X2=1.-X1
@@ -3119,6 +3116,7 @@ C
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFTLE(IFL01,IFL02,KS01,IK1,AM1,
      *                  IFL03,IFL04,KS02,IK2,AM2,P1,IBINA)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE TRIPLE POMERON VERTEX DIFFRACTION
@@ -3126,7 +3124,6 @@ C
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       LOGICAL RETU
       COMMON /ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
-      COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON /DATA2/PUD,PS1,SIGMA,CX2
       COMMON /PROD/ PR(8,50),IPR(50),NP
       COMMON /PRODT/ IORD(50)
@@ -3209,7 +3206,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS=XSEE(XMINS)
 C    COMPUTE PT VALUE FOR HADRON
       CALL GETPT(PTH,SIGMA)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX=PTH*COS(PHI)
       PTHY=PTH*SIN(PHI)
       PS=XS*P0
@@ -3490,11 +3487,12 @@ C     WRITE(ITLIS,1200)IK1,IK2,PLALB
       GAM2=WIDTLE(GAMH2)
       AMP1=AMH1+GAM1
       AMP2=AMH2+GAM2
-      IF(ISOB3.NE.1) GO TO 107
-      IF(IKH1.GE.45.AND.IKH1.LE.48)               AMP1=AMAS(IKH1)
-      IF(IKH2.GE.45.AND.IKH2.LE.48)               AMP2=AMAS(IKH2)
-      IF(IKH1.EQ.10.OR.IKH1.EQ.11.OR.IKH1.EQ.16)  AMP1=AMAS(IKH1)
-      IF(IKH2.EQ.10.OR.IKH2.EQ.11.OR.IKH2.EQ.16)  AMP2=AMAS(IKH2)
+      IF(ISOB3 == 1) THEN
+         IF(IKH1.GE.45.AND.IKH1.LE.48)               AMP1=AMAS(IKH1)
+         IF(IKH2.GE.45.AND.IKH2.LE.48)               AMP2=AMAS(IKH2)
+         IF(IKH1.EQ.10.OR.IKH1.EQ.11.OR.IKH1.EQ.16)  AMP1=AMAS(IKH1)
+         IF(IKH2.EQ.10.OR.IKH2.EQ.11.OR.IKH2.EQ.16)  AMP2=AMAS(IKH2)
+      end if
 C  CHECK ENERGY THRESHOLD
 107   IF(W.LT.(AMP1+AMP2)) GO TO 205
 109   HA=AMP1
@@ -3658,7 +3656,7 @@ C
       COMMON/NCASCA/NCAS,NCPRI
       LOGICAL VALON
       DIMENSION IK(5),PO(3),IRL(250),ILL(250)
-C   
+C
       CHARACTER*8 LAB1,LAB2
       LOGICAL BACK
       LOGICAL LRET
@@ -3911,11 +3909,11 @@ C       HH AND AHH COLLISIONS AT HIGH ENERGY AND ANTIBARION
 C       BARION COLLISION OR MESON-MESON COLISION
 C         (QUARK-GLUON STRINGS MODEL)
 C-------
-      IF(KEYHH) GO TO 521
-      MULTP=.TRUE.
-      QSEE=.FALSE.
+      IF(.not.KEYHH) then
+         MULTP=.TRUE.
+         QSEE=.FALSE.
+      end if
 C-------
- 521  CONTINUE
       DO 399 JJ=1,11
  399  GH1H2(JJ)=.TRUE.
       CALL SIGIN
@@ -4077,13 +4075,13 @@ C LORENTZ BOOST OF COORDINATES & TIMES
       END
 c   ********************************************************
       SUBROUTINE DIFSMA(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE LOW MASS DIFFRACTION
 C
       COMMON/ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/COMLID/PLIDER(499)
-      COMMON/CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -4163,11 +4161,11 @@ c   **********************************
       IRET=1
       go  to  2001
 102   CONTINUE
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX2=PT2*COS(PHI)
       PY2=PT2*SIN(PHI)
       CALL GAUSPT(PT,SIGMAD)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTX=PT*COS(PHI)
       PTY=PT*SIN(PHI)
       PX1=-PX2+PTX
@@ -4299,11 +4297,11 @@ C     IF(AMDTR.GE.3.3) GO TO 160
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DIFTRI(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE TRIPLE POMERON VERTEX DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON/COMLID/PLIDER(499)
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -4390,7 +4388,7 @@ C    COMPUTE PT VALUE FOR HADRON
 C      PRINT *, 'TO GAUSPT'
       CALL GAUSPT(PTH,SIGMAN)
 C      PRINT  *, 'FROM GAUSPT'
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX=PTH*COS(PHI)
       PTHY=PTH*SIN(PHI)
       PS=XS*P0
@@ -4667,11 +4665,11 @@ C-----------------------------------------------------------------------
       END
 C***********************************************************************
       SUBROUTINE DOUBLO(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE ENHANCEMENT (LOOP)-POMERONS DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -4733,7 +4731,7 @@ C     IF(IB(IKA).EQ.-1.AND.IB(IKB).NE.-1) B=12.0
       NREP=NREP+1
       IF(NREP.LT.NTRIES)  GO  TO  1994
       P0=P0OLD
-      XMIN=XMINO                         ! 17.05.2002      
+      XMIN=XMINO                         ! 17.05.2002
       IRET=1
       RETURN
 1994  CONTINUE
@@ -4742,7 +4740,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS3=1.-XS1
 C    COMPUTE PT VALUE
       CALL GAUSPT(PTH,SIGMAN)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX=PTH*COS(PHI)
       PTHY=PTH*SIN(PHI)
       XMINS2=(PARBE+AMB)**2/SCM
@@ -4785,7 +4783,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       NREP=NREP+1
       IF(NREP.LT.NTRIES)  GO  TO  1992
 2002  P0=P0OLD                                ! 17.05.2002
-      XMIN=XMINO                              ! 17.05.2002      
+      XMIN=XMINO                              ! 17.05.2002
       IRET=1
       RETURN
 1992  CONTINUE
@@ -4946,11 +4944,11 @@ C     WRITE(ITLIS,1000) SCM,NPTCL
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DOUBY(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE DOUBLE ENHANCEMENT (Y)-POMERONS DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/COMLID/PLIDER(499)
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -5021,7 +5019,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS12=XS1-XS11
 C    COMPUTE PT VALUE
       CALL GAUSPT(PTH,SIGMAN)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX1=PTH*COS(PHI)
       PTHY1=PTH*SIN(PHI)
       PTHX11=PTHX1*RNDM(-1.)
@@ -5038,7 +5036,7 @@ C   COMPUTE X VALUE FOR SEE QUARKS
       XS22=XS2-XS21
 C    COMPUTE PT VALUE
       CALL GAUSPT(PTH,SIGMAN)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTHX2=PTH*COS(PHI)
       PTHY2=PTH*SIN(PHI)
       PTHX21=PTHX2*RNDM(-1.)
@@ -5155,11 +5153,11 @@ C
       END
 C***********************************************************************
       SUBROUTINE DOUBSM(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE DOUBLE SMALL MASS DIFFRACTION
 C
-      COMMON/CONST/ PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/ SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -5233,16 +5231,16 @@ C COMPUTE PT VALUE FOR HADRON
       IRET=1
       go  to  2001
 1994  CONTINUE
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PTXH=PTH*COS(PHI)
       PTYH=PTH*SIN(PHI)
 C    COMPUTE PT VALUE
       CALL GAUSPT(PT1,SIGMA)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX1=PT1*COS(PHI)
       PY1=PT1*SIN(PHI)
       CALL GAUSPT(PT2,SIGMA)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX2=PT2*COS(PHI)
       PY2=PT2*SIN(PHI)
       PX1H=PTXH-PX1
@@ -5812,6 +5810,7 @@ C         ANNIHILATION CASE:
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE REGTRI(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE TRIPLE REGGEON DIAGRAM
@@ -5819,7 +5818,6 @@ C
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/COMLID/PLIDER(499)
       COMMON /PARCUT/ SWMAX
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/COMXM/ XMIN,XMAX
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -5881,7 +5879,7 @@ C   COMPUTE X VALUES FOR PARTONS
       X1=XDIST(XMIN,IBA,ISA,IFL01S)
       X2=1.-X1
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMA**2
       PZER2=P0**2
@@ -5890,7 +5888,7 @@ C    COMPUTE PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMB**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -6090,6 +6088,7 @@ C     WRITE(ITLIS,1000) SCM
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE UNCYLI(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C      COMPUTE UNDEVELOPED CYLINDER DIAGRAM
@@ -6097,7 +6096,6 @@ C
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/COMLID/PLIDER(499)
       COMMON /PARCUT/ SWMAX
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/COMXM/ XMIN,XMAX
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -6160,7 +6158,7 @@ C   COMPUTE X VALUES FOR PARTONS
       X1=XDIST(XMIN,IBA,ISA,IFL01S)
       X2=1.-X1
 C    COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMA**2
       PZER2=P0**2
@@ -6169,7 +6167,7 @@ C    COMPUTE PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMB**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -6401,11 +6399,11 @@ C     WRITE(ITLIS,1000) SCM
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CYLIN(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE CYLINDER TYPE DIAGRAM
 C
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON /PARCUT/ SWMAX
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
@@ -6466,7 +6464,7 @@ C   COMPUTE X VALUES FOR PARTONS
       X4=1.-X3
       IF(IBA.EQ.0.AND.IBB.EQ.0) NRET=0
 C   COMPUTE PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMA**2
       PZER2=P0**2
@@ -6475,7 +6473,7 @@ C   COMPUTE PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMB**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -6655,7 +6653,7 @@ C-----------------------------------------------C
       RETURN
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-c************** last correction 12-21-95 05:40pm************* 
+c************** last correction 12-21-95 05:40pm*************
 
 ! =====================================================================
 ! READHH removed by CMJ (XCP-3, LANL) on 09/08/2017, it is not called
@@ -6693,7 +6691,7 @@ C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE   BACKID(IDOLD,IDNEW)
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
       COMMON/ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
-C  
+C
       CHARACTER*8 PNAME,LAB
       DIMENSION PNAME(54)
       DATA PNAME/
@@ -6801,7 +6799,6 @@ C          QUARK-BASED IDENT CODE
       DIMENSION AMMES0(10),AMMES1(10),AMBAR0(30),AMBAR1(30)
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/QLMASS/ AMLEP(52),NQLEP,NMES,NBARY
-      COMMON/ISOB3/ISOB3
 C          0- MESON MASS TABLE
       DATA AMMES0/.13496,.13957,.5488,.49367,.49767,.9576,1.8633
      1,1.8683,2.030,2.976/
@@ -6887,7 +6884,7 @@ C          BARYONS
       INDEX=INDEX-109*JSPIN-36*NMES-NQLEP
       INDEX=INDEX-11
       AMASS=(1-JSPIN)*AMBAR0(INDEX)+JSPIN*AMBAR1(INDEX)
-      IF(ISOB3.NE.1)  RETURN
+      IF(ISOB3 /= 1)  RETURN
       IF(ID.EQ.1111.OR.ID.EQ.1121.OR.ID.EQ.2221.OR.ID.EQ.1221)
      *GO  TO  1991
       RETURN
@@ -6963,7 +6960,6 @@ C
 C          RETURN THE LABEL FOR THE PARTICLE ID.
 C          QUARK-BASED IDENT CODE.
 C
-      COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/QLMASS/ AMLEP(52),NQLEP,NMES,NBARY
 C
       CHARACTER*8   LABEL1, LLEP(104)
@@ -7157,6 +7153,7 @@ c      write(16,*) 'ID,ISUM,CHARGE=', ID,ISUM,CHARGE
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE DECAYQ(IP,IPOINT)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
       integer*4 :: NJSET,JORIG(100),JTYPE(100),
      &     JDCAY(100)
@@ -7177,14 +7174,13 @@ C          QUARK-BASED IDENT CODE
       COMMON/PARORD/IORDP(499)
 C     LOOK MUST BE DIMENSIONED TO THE MAXIMUM VALUE OF INDEX
       COMMON/DKYTAB/LOOK(400),CBR(600),MODE(5,600)
-      LOGICAL NODCAY,NOETA,NOPI0,NONUNU,NOEVOL,NOHADR,NOKA0
-      COMMON/NODCAY/NODCAY,NOETA,NOPI0,NONUNU,NOEVOL,NOHADR,NOKA0
+      LOGICAL NODCAY,NOETA,NOPI0,NOKA0
+      COMMON/NODCAY/NODCAY,NOETA,NOPI0,NOKA0
       COMMON/JWORK/ZZC(100),P1CM(4),E1CM,E2CM,E3CM,E4CM,E5CM,
      &     J1,J2,J3,J4,J5,JMATCH(100),TNEW
       LOGICAL TNEW
       DIMENSION JJ(5),EE(5)
       EQUIVALENCE (J1,JJ(1)),(E1CM,EE(1))
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       DIMENSION PGEN(5,5),RND(5),U(3),BETA(3),ROT(3,3),PSAVE(3),
      &     REDUCE(5), PSUM(5)
       DATA REDUCE/1.,1.,2.,5.,15./
@@ -7286,7 +7282,7 @@ C          CARRY OUT TWO-BODY DECAYS IN PGEN FRAMES
       DO 410 I=1,NADD1
       QCM=DBLPCM(PGEN(5,I),PGEN(5,I+1),PPTCL(5,NPTCL+I))
       U(3)=2.*RNDM(-1.)-1.
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       U(1)=SQRT(1.-U(3)**2)*COS(PHI)
       U(2)=SQRT(1.-U(3)**2)*SIN(PHI)
       DO 420 J=1,3
@@ -7590,6 +7586,7 @@ C
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE CLUSTR(IFL1,IFL2,AMCTR)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS CLUSTER BREAKING
@@ -7605,7 +7602,6 @@ C
      *,IDCAY(499)
       COMMON/FRGCPA/ PUDC,PUDCC,PSPINC,PJSPNC,PMIX1C(3,2),PMIX2C(3,2),
      *PBARC
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/COMNPT/ NOPTC
       LOGICAL NOPTC
       COMMON/COLRET/ LRET
@@ -7684,7 +7680,7 @@ C   PROB IS TWO-BODY PHASE SPACE FACTOR
 C      DRND=RNDM(-1.)
 C      IF(DRND.GT.PROB) GO TO 100
       U(3)=COSDD(0)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       ST=SQRT(1.-U(3)**2)
       U(1)=ST*COS(PHI)
       U(2)=ST*SIN(PHI)
@@ -7774,13 +7770,13 @@ C  CONSTRUCT BARYON IDENT
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE STRING(IFL1,IFL2,AMSTR)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C  HADRONS PRODUCTION BY MEANS STRING BREAKING
 C  WITH QUARK AND ANTIQUARK OR QUARK AND DIQUARK OR DIQUARK AND
 C  ANTIDIQUARK IFL1 AND IFL2 ON ENDS
 C  AMSTR IS MASS OF STRING
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/ITAPES/ ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -7904,7 +7900,7 @@ C DIQUARK BREAK
 C  LEADING QUARK TRANSFERSE MOMENTUM
 C     CALL PTDGET(PXL,PYL,SIGQTS)
       CALL GAUSPT(PTL0,SIGQTS)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PXL=PTL0*COS(PHI)
       PYL=PTL0*SIN(PHI)
       PX1L(JSIDE)=PX1(JSIDE)
@@ -7927,7 +7923,7 @@ C  IDENT,MASS AND TRANSFERSE MOMENTUM OF PARTICLE
       PPTCL(5,I)=AMASS(IDENT(I))
 C     CALL PTDGET(PX2,PY2,SIGQTS)
       CALL GAUSPT(PT2,SIGQTS)
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       PX2=PT2*COS(PHI)
       PY2=PT2*SIN(PHI)
       PPTCL(1,I)=PX1(JSIDE)+PX2
@@ -8276,139 +8272,6 @@ C
       PPTCL(8,J)=PPTCL(8,J)+GA*V(3)*(VR*GA/(GA+1.)-DBLE(L)*PPTCL(9,J))
       PPTCL(9,J)=GA*(PPTCL(9,J)-DBLE(L)*VR)
 100   CONTINUE
-      RETURN
-      END
-C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-      SUBROUTINE FLAVOR(ID,IFL1,IFL2,IFL3,JSPIN,INDEX)
-      IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
-C
-C          THIS SUBROUTINE UNPACKS THE IDENT CODE ID=+/-IJKL
-C
-C          MESONS--
-C          I=0, J<=K, +/- IS SIGN FOR J
-C          ID=110 FOR PI0, ID=220 FOR ETA, ETC.
-C
-C          BARYONS--
-C          I<=J<=K IN GENERAL
-C          J<I<K FOR SECOND STATE ANTISYMMETRIC IN (I,J), EG. L = 2130
-C
-C          OTHER--
-C          ID=1,...,6 FOR QUARKS
-C          ID=9 FOR GLUON
-C          ID=10 FOR PHOTON
-C          ID=11,...,16 FOR LEPTONS
-C          ID=20 FOR KS, ID=-20 FOR KL
-C
-C          I=21...26 FOR SCALAR QUARKS
-C          I=29 FOR GLUINO
-C          I=30 FOR PHOTINO
-C          I=31...36 FOR SCALAR LEPTONS
-C          I=39 FOR WINO
-C          I=40 FOR ZINO
-C
-C          ID=80 FOR W+
-C          ID=81,...,89 FOR HIGGS MESONS
-C          ID=90 FOR Z0
-C
-C          DIQUARKS--
-C          ID=+/-IJ00, I<J FOR DIQUARK COMPOSED OF I,J.
-C
-C          INDEX IS A SEQUENCE NUMBER USED INTERNALLY
-C
-      COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
-      COMMON/QLMASS/ AMLEP(52),NQLEP,NMES,NBARY
-*@@@@@@@@@@   SIVOKL  @@@@@@@@@@
-      COMMON/FLACOM/NFLA,NFL1,NFL2,NFL3,NSPIN,NNDEX
-*@@@@@@@@@@@@@@@@@@@@
-      IDABS=IABS(ID)
-      I=IDABS/1000
-      J=MOD(IDABS/100,10)
-      K=MOD(IDABS/10,10)
-      JSPIN=MOD(IDABS,10)
-      IF(ID.NE.0.AND.MOD(ID,100).EQ.0) GO TO 300
-      IF(J.EQ.0) GO TO 200
-      IF(I.EQ.0) GO TO 100
-C          BARYONS
-C         ONLY X,Y BARYONS ARE QQX, QQY, Q=U,D,S.
-      IFL1=ISIGN(I,ID)
-      IFL2=ISIGN(J,ID)
-      IFL3=ISIGN(K,ID)
-      IF(.NOT.(K.LE.6)) GO TO 1
-        INDEX=MAX0(I-1,J-1)**2+I+MAX0(I-J,0)+(K-1)*K*(2*K-1)/6
-     1  +109*JSPIN+36*NMES+NQLEP+11
-      GO TO 2
-1       CONTINUE
-        INDEX=MAX0(I-1,J-1)**2+I+MAX0(I-J,0)+9*(K-7)+91
-     1  +109*JSPIN+36*NMES+NQLEP+11
-2     CONTINUE
-      RETURN
-C          MESONS
-100   CONTINUE
-      IFL1=0
-      IFL2=ISIGN(J,ID)
-      IFL3=ISIGN(K,-ID)
-      INDEX=J+K*(K-1)/2+36*JSPIN+NQLEP
-      INDEX=INDEX+11
-*@@@@@@@@@@@@@ SIVOKL - TONEEV @@@@@
-      IF(ID.EQ.110.OR.ID.EQ.111.OR.ID.EQ.221) GO TO 13
-      IF(ID.EQ.220.OR.ID.EQ.330)GOTO 12
-      RETURN
- 12   IFL2=2+INT(0.25+RNDM(-1.))
-      IF(IFL2.EQ.2) IFL2=1+INT(0.5+RNDM(-1.))
-      IFL2=ISIGN(IFL2,ID)
-      IFL3=ISIGN(IFL2,-ID)
-
-      IF(NFLA.EQ.-1) THEN
-      NFL1=IFL1
-      NFL2=IFL2
-      NFL3=IFL3
-      NSPIN=JSPIN
-      NNDEX=INDEX
-      NFLA=ID
-      ENDIF
-      RETURN
- 13   IFL2= 1+INT(0.5+RNDM(-1.))
-      IFL2=ISIGN(IFL2,ID)
-      IFL3=ISIGN(IFL2,-ID)
-
-      IF(NFLA.EQ.-1) THEN
-      NFL1=IFL1
-      NFL2=IFL2
-      NFL3=IFL3
-      NSPIN=JSPIN
-      NNDEX=INDEX
-      NFLA=ID
-c      RETURN
-c in the next line NFLB was not defined 11.16.94 V.T. !
-c      ELSE IF(NFLB.EQ.-1) THEN
-c      MFL1=IFL1
-c      MFL2=IFL2
-c      MFL3=IFL3
-c      MSPIN=JSPIN
-c      MNDEX=INDEX
-c      NFLB=ID
-      ENDIF
-*@@@@@@@@@@@@@@@@@@@@
-      RETURN
-200   CONTINUE
-      IFL1=0
-      IFL2=0
-      IFL3=0
-      JSPIN=0
-      INDEX=IDABS
-      IF(IDABS.LT.20) RETURN
-C          DEFINE INDEX=20 FOR KS, INDEX=21 FOR KL
-      INDEX=IDABS+1
-      IF(ID.EQ.20) INDEX=20
-C          INDEX=NQLEP+1,...,NQLEP+11 FOR W+, HIGGS, Z0
-      IF(IDABS.LT.80) RETURN
-      INDEX=NQLEP+IDABS-79
-      RETURN
-300   IFL1=ISIGN(I,ID)
-      IFL2=ISIGN(J,ID)
-      IFL3=0
-      JSPIN=0
-      INDEX=0
       RETURN
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -8920,6 +8783,7 @@ C     ELASTIC CROSS SECTION
                END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION PPCRSE(S,IB)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -8927,7 +8791,6 @@ C   COMPUTE PP-TOTAL CROSS SECTION
 C
 C   M.M. BLOCK AND R.N. CAHN REV.MOD.PHYS.V.57,N2(1985) (SET 2)
 C
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/RHOPP/ RHOPP
       COMMON/CREGGE/ CREGGE
       DATA A/41.30/,D/-40.51/,BETA/0.62/,ALFA/0.47/,S0/293.46/
@@ -8944,6 +8807,7 @@ C
       END
 C**********************************************************************
       DOUBLE PRECISION FUNCTION PPELSE(S,IB)
+      use modifiedDCMParams, only: pi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
@@ -8951,7 +8815,6 @@ C   COMPUTE PP-ELASTIC CROSS SECTION
 C
 C   M.M. BLOCK AND R.N. CAHN REV.MOD.PHYS.V.57,N2(1985) (SET 1)
 C
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/CPPTOT/ CPPTOT
       COMMON/RHOPP/ RHOPP
       DATA CP/10.90/,DP/-0.08/,EP/0.043/,CM/23.27/,DM/0.93/
@@ -9948,11 +9811,11 @@ C   @@@@@@@@@@@@@@@@@@
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE TWOSHE(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C       COMPUTE TWO SHEETS ANNIHILATION DIAGRAM
 C
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
      *,IDCAY(499)
@@ -10039,7 +9902,7 @@ C    COMPUTE X VALUES FOR PARTONS
       CALL X2DIST(X1,X2,IFL01,IFL02)
       CALL X2DIST(X3,X4,IFL03,IFL04)
 C     PT VALUES FOR PARTONS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT1,SIGMA)
       AMZER2=AMB**2
       PZER2=P0**2
@@ -10048,7 +9911,7 @@ C     PT VALUES FOR PARTONS
       PY1=PT1*SIN(PHI)
       PX2=-PX1
       PY2=-PY1
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       CALL GAUSPT(PT3,SIGMA)
       AMZER2=AMA**2
       AMQ22=AMZER2*(AMZER2+4.*X3*X4*PZER2)/(4.*(AMZER2+PZER2))-PT3**2
@@ -10079,11 +9942,11 @@ C     PT VALUES FOR PARTONS
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       SUBROUTINE THREES(IRET)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C     COMPUTE THREE SHEETS ANNIHILATION DIAGRAM
 C
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/PRIMP0/ P0
       COMMON/PARTCL/PPTCL(9,499),NPTCL,IORIG(499),IDENT(499)
@@ -10169,9 +10032,9 @@ C    COMPUTE X VALUES FOR PARTONS
       IF(RES.LT.0.) GO TO 260
 C  COMPUTE PT VALUES FOR PARTONS
       CALL GAUSPT(PT11,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PT12,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PT11X=PT11*COS(PHI1)
       PT11Y=PT11*SIN(PHI1)
       PT12X=PT12*COS(PHI2)
@@ -10189,9 +10052,9 @@ C  COMPUTE X VALUES FOR PARTONS
       IF(RES.LT.0.) GO TO 261
 C  COMPUTE PT VALUES FOR PARTONS
       CALL GAUSPT(PT21,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PT22,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PT21X=PT21*COS(PHI1)
       PT21Y=PT21*SIN(PHI1)
       PT22X=PT22*COS(PHI2)
@@ -10371,15 +10234,15 @@ C  COMPUTE SCATTERING ANGLE
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
       DOUBLE PRECISION FUNCTION WIDTH(GAM)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
 C
 C   COMPUTE WIDTH OF PARTICLE
 C
-        COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
 100   DRND=RNDM(-1.)
       GT=GAM*SQRT(-LOG(DRND))
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       WIDTH=GT*COS(PHI)
       IF(ABS(WIDTH).GT.GAM) GO TO 100
       RETURN
@@ -10617,10 +10480,10 @@ C     IF(IB1.EQ.-1.AND.IB2.NE.-1) B=11.0
       END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
         SUBROUTINE ELZPHI(IK1,IK2,TKIN,Z,PHI,IEXE)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 c
-        COMMON /CONST/ PI,SQRT2,ALF,GF,UNITS
-      PHI=2.*PI*RNDM(-1.)
+      PHI=twpi*RNDM(-1.)
       IF(IEXE.EQ.0) GO TO 1
        Z=COSP(TKIN,12)
        RETURN
@@ -10793,7 +10656,7 @@ C
 C  SIGMA    =CROSS SETION SUMMED OVER TYPES ALLOWED BY GH1H2
 C  SIGS(I)  =PARTIAL CROSS SECTION FOR DUAL TYPE DIAGRAM
 C
-C     
+C
       CHARACTER*8 LAB1,LAB2
       LOGICAL GH1H2
       LOGICAL GH
@@ -10801,7 +10664,6 @@ C
       LOGICAL MULTP
       COMMON/ITAPES/ITDKY,ITEVT,ITCOM,ITLIS
       COMMON/HADSIG/SIGS(100),SIGEVT,NSIGS,INOUT(2,100)
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
       COMMON/REACOE/ COEF(11),COEF1(11)
       COMMON/COMPLI/ LIMP
@@ -11721,6 +11583,7 @@ C ONLY FOR STRANGE QUARK
        END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
        SUBROUTINE PTQUAR(KEY)
+      use modifiedDCMParams, only: twpi
       IMPLICIT REAL*8 (A-H,O-Z), INTEGER (I-N)
 C
 C    COMPUTE PARTON TRANSFERSE MOMENTA
@@ -11740,7 +11603,6 @@ C        MOMENTA VALENCE AND SEA QUARKS
        COMMON/COMPYB/ PYBV1,PYBV2,PYBQQ,
      *PYBS1(12),PYBS2(12)
       COMMON/PRIMAR/SCM,HALFE,ECM,NJET,IDIN(2),NEVENT,NTRIES
-      COMMON/CONST/PI,SQRT2,ALF,GF,UNITS
       COMMON/COMIND/ PUD,SIGMA,ALFA,BETA
       COMMON/COMQMA/ AMQUA1,AMQUA2,AMQQA,
      *AMQAS1(12),AMQAS2(12)
@@ -11777,9 +11639,9 @@ C        MOMENTA VALENCE AND SEA QUARKS
       IF(NPA.EQ.1) GO TO 5
       DO 4 JS=1,NS
       CALL GAUSPT(PTS1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PTS2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
        PXAS1(JS)=PTS1*COS(PHI1)
        PYAS1(JS)=PTS1*SIN(PHI1)
        PXAS2(JS)=PTS2*COS(PHI2)
@@ -11793,14 +11655,14 @@ C        MOMENTA VALENCE AND SEA QUARKS
       PTQXS0=PTQXS
       PTQYS0=PTQYS
 5     CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXAV1=PTV1*COS(PHI1)
       PYAV1=PTV1*SIN(PHI1)
       PXAV2=0.
       PYAV2=0.
       IF(.NOT.DIQAN) GO TO 15
       CALL GAUSPT(PTV2,SIGMDQ)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXAV2=PTV2*COS(PHI2)
       PYAV2=PTV2*SIN(PHI2)
  15   PTQXS=PTQXS0
@@ -11837,11 +11699,11 @@ C        MOMENTA VALENCE AND SEA QUARKS
 500   CONTINUE
       PBM2=P02+25.
       CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXAV1=PTV1*COS(PHI1)
       PYAV1=PTV1*SIN(PHI1)
       CALL GAUSPT(PTV2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXAV2=PTV2*COS(PHI2)
       PYAV2=PTV2*SIN(PHI2)
       PXAQQ=-(PXAV1+PXAV2)
@@ -11888,9 +11750,9 @@ C        MOMENTA VALENCE AND SEA QUARKS
       XI2(INUM-1)=XBSEA1(JS)**2
       XI2(INUM)=XBSEA2(JS)**2
       CALL GAUSPT(PTS1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       CALL GAUSPT(PTS2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
        PXBS1(JS)=PTS1*COS(PHI1)
        PYBS1(JS)=PTS1*SIN(PHI1)
        PXBS2(JS)=PTS2*COS(PHI2)
@@ -11901,14 +11763,14 @@ C        MOMENTA VALENCE AND SEA QUARKS
       PTQXS0=PTQXS
       PTQYS0=PTQYS
  7    CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXBV1=PTV1*COS(PHI1)
       PYBV1=PTV1*SIN(PHI1)
       PXBV2=0.
       PYBV2=0.
       IF(.NOT.DIQAN) GO TO 35
       CALL GAUSPT(PTV2,SIGMDQ)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXBV2=PTV2*COS(PHI2)
       PYBV2=PTV2*SIN(PHI2)
  35   PTQXS=PTQXS0
@@ -11944,11 +11806,11 @@ C        MOMENTA VALENCE AND SEA QUARKS
       GO TO 9
 600   CONTINUE
       CALL GAUSPT(PTV1,SIGMA)
-      PHI1=2.*PI*RNDM(-1.)
+      PHI1=twpi*RNDM(-1.)
       PXBV1=PTV1*COS(PHI1)
       PYBV1=PTV1*SIN(PHI1)
       CALL GAUSPT(PTV2,SIGMA)
-      PHI2=2.*PI*RNDM(-1.)
+      PHI2=twpi*RNDM(-1.)
       PXBV2=PTV2*COS(PHI2)
       PYBV2=PTV2*SIN(PHI2)
       PXBQQ=-(PXBV1+PXBV2)

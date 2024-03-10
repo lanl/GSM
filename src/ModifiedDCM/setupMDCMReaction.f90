@@ -18,7 +18,7 @@
          & tempA, tempZ, z0
 
 ! ====================================================================
-    
+
     real(real64),   parameter, dimension(10) :: rms = &
          [ 0.85,2.095,1.976,1.671,2.50,2.57,2.45,2.519,2.45,2.42 ]
 
@@ -64,6 +64,8 @@
     common /iact/ iact
     integer(int32) :: inddec
     common/inddec/inddec
+    ! isob3 looks like an option for mass computations, perhaps to signify
+    ! baryon simulations?
     integer(int32) :: isob3
     common/isob3/isob3
     integer(int32) :: isob2
