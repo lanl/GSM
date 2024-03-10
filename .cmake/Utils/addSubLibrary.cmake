@@ -22,7 +22,7 @@ macro (add_sublibrary target sources dependencies)
   endif()
 
   # Create the general structure for the library
-  add_library(${subtarget} "${libtype}" "")
+  add_library(${subtarget} "${lib_type}" "")
   add_library(${PROJECT_NAME}::${target} ALIAS ${subtarget})
 
   # Set library sources
