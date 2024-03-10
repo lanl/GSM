@@ -2,12 +2,14 @@
 # GSM top-level CMakeLists.txt
 #
 # Options:
-#   GSM.BUILD_DOCS    [ON]                Creates an API documentation build target
-#   GSM.SIM_DIR       [ON]                Creates simulation directory build target
-#   GSM.MPI           [OFF]               Builds GSM with MPI enabled
-#   GSM.PACK          [on]                Packages GSM
-#   GSM.SHARED        [BUILD_SHARED_LIBS] Builds GSM with shared libraries
-#   GSM.TEST          [ON]                Enables testing of GSM via CTest
+#   gsm.BUILD_DOCS    [ON]                Creates an API documentation build target
+#   gsm.SIM_DIR       [ON]                Creates simulation directory build target
+#   gsm.MPI           [OFF]               Builds GSM with MPI enabled
+#   gsm.OpenMP        [OFF]               Builds GSM with OpenMP enabled
+#   gsm.OpenACC       [OFF]               Builds GSM with OpenACC enabled
+#   gsm.PACK          [on]                Packages GSM
+#   gsm.SHARED        [BUILD_SHARED_LIBS] Builds GSM with shared libraries
+#   gsm.TEST          [ON]                Enables testing of GSM via CTest
 #
 # Usage:
 #    cmake [OPTIONS] ../
@@ -57,6 +59,7 @@ add_subdirectory(Docs EXCLUDE_FROM_ALL)
 # Configure executable
 #
 # ============================================================================ #
+# NOTE: Simulation directory inclusion depends on this naming convention.
 set (exec "x${PROJECT_NAME}${PROJECT_VERSION_MAJOR}")
 
 # Set main executable's sources and dependencies

@@ -692,8 +692,8 @@
        else
           write(gsmObj%io%message, 4950) "will not"
        end if
+       call gsmObj%io%print(3, 4, gsmObj%io%message)
     end if
-    call gsmObj%io%print(3, 4, gsmObj%io%message)
 
     !>>> ASSIGN TO AN OPENMP TASK
     ! Establish all modified DCM arguments:

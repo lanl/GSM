@@ -3,7 +3,7 @@
 # Finds and sets options for MPI usage
 #
 # ============================================================================ #
-cmake_minimum_required (VERSION 3.8.0)
+cmake_minimum_required (VERSION 3.10.0)
 
 if (${PROJECT_NAME}.MPI)
   find_package(MPI)

@@ -14,6 +14,7 @@ set(model_name "Parallel")
 # Load the sources used for the sub-model
 set(sources
   ${CMAKE_CURRENT_LIST_DIR}/OpenMPAbstraction.f90
+  ${CMAKE_CURRENT_LIST_DIR}/OpenACCAbstraction.f90
   # ${CMAKE_CURRENT_LIST_DIR}/MPI.f90
   )
 

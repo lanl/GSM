@@ -19,12 +19,18 @@ add_option("BUILD_DOCS"
   "Create and install the HTML based API documentation for ${PROJECT_NAME} \
   (requires Doxygen)"
   ON)
-add_option("MPI"
-  "Compile ${PROJECT_NAME} with MPI"
-  OFF)
 add_option("OpenMP"
   "Compile ${PROJECT_NAME} with OpenMP"
   OFF)
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10")
+  # Note: for CMake < 3.10, just assume MPI and OpenACC are unavailable
+  add_option("MPI"
+    "Compile ${PROJECT_NAME} with MPI"
+    OFF)
+  add_option("OpenACC"
+    "Compile ${PROJECT_NAME} with OpenACC"
+    OFF)
+endif()
 add_option("PACKAGE"
   "Package ${PROJECT_NAME}"
   ON)
@@ -50,12 +56,18 @@ if(${PROJECT_NAME}.BUILD_DOCS)
   set(${PROJECT_NAME}.BUILD_DOCS ${DOXYGEN_FOUND})
 endif()
 
-if(${PROJECT_NAME}.MPI)
-  include (loadMPI)
-endif()
-
 if(${PROJECT_NAME}.OpenMP)
   include (loadOpenMP)
+endif()
+
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.10")
+  if(${PROJECT_NAME}.MPI)
+    include (loadMPI)
+  endif()
+
+  if(${PROJECT_NAME}.OpenACC)
+    include (loadOpenACC)
+  endif()
 endif()
 
 if(${PROJECT_NAME}.PACKAGE)
