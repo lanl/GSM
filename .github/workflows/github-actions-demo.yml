@@ -4,7 +4,7 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 
 jobs:
-  Explore-GitHub-Actions:
+  test:
     name: Checking out GitHub Actions
     runs-on: ubuntu-latest
     steps:
