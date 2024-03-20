@@ -1,5 +1,7 @@
 # The Generalized Spallation Model and Event Generator
 
+was
+
 The Generalized Spallation Model, herein GSM, is a *mostly* object-oriented event generator for spallation events. GSM is intended to simulate particle interactions for energies greater than _100 MeV/A_, up to several _TeV/A_.
 
 > **GSM version 1.0.0 beta**
