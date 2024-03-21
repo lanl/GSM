@@ -10,6 +10,8 @@
 #   gsm.PACK          [on]                Packages GSM
 #   gsm.SHARED        [BUILD_SHARED_LIBS] Builds GSM with shared libraries
 #   gsm.TEST          [ON]                Enables testing of GSM via CTest
+#   gsm.COVERAGE      [ON]                Enables code coverage of GSM during execution
+#
 #
 # Usage:
 #    cmake [OPTIONS] ../
