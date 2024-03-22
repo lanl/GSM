@@ -11,9 +11,7 @@ jobs:
 
       - name: "Obtain list of files changed in this branch"
         run: |
-          echo "Current branch: ${{ github.GITHUB_HEAD_REF }}"
-          echo "Current branch: GITHUB_HEAD_REF"
-          echo "Merge to branch: ${{ github.GITHUB_BASE_REF }}"
+          echo "Current branch: ${{ github.HEAD_REF }}"
           echo "Merge to branch: ${{ github.BASE_REF }}"
 
       - name: "Run Vale"
