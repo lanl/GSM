@@ -13,11 +13,11 @@ jobs:
           ref: ${{ github.HEAD_REF }}
           fetch-depth: 20
 
-#      - name: "Obtain files modified by last N commits"
-#        id: list
-#        run: |
-#          tmp_files=$(git diff --name-only HEAD~10 --)
-#          echo "modified_files=${tmp_files}" >> "$GITHUB_OUTPUT"
+      - name: "Obtain files modified by last N commits"
+        id: list
+        run: |
+          tmp_files=$(git diff --name-only HEAD~10 --)
+          echo "modified_files=${!tmp_files}" >> "$GITHUB_OUTPUT"
 
       - name: "Run Vale"
         id: prose
@@ -25,6 +25,5 @@ jobs:
         with:
           reporter: github-pr-check
           fail_on_error: true
-          files: $(git diff --name-only HEAD~10 --)
-          # files: ${{ steps.list.outputs.modified_files }}
+          files: ${{ steps.list.outputs.modified_files }}
           separator: "\n"
