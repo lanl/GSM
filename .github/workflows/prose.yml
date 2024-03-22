@@ -25,4 +25,4 @@ jobs:
         with:
           reporter: github-pr-check
           fail_on_error: true
-          files: ${{ steps.list.outputs.$tmp_files }}
+          files: ${{ steps.list.outputs.modified_files }}
