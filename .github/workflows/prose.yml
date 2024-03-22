@@ -11,6 +11,7 @@ jobs:
         with:
           ref: ${{ github.HEAD_REF }}
           fetch-depth: 20
+      - run: git diff --name-only HEAD~10 --
 
       - name: "Obtain list of files changed within last 20 commits on ${{ github.HEAD_REF }}"
         run: |
