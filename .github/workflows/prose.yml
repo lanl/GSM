@@ -9,7 +9,7 @@ jobs:
       - name: "Load project branch '${{ github.HEAD_REF }}' locally"
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ github.HEAD_REF }}
 
       - name: "Obtain list of files changed within last 20 commits on ${{ github.HEAD_REF }}"
         run: |
