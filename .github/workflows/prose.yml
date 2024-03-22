@@ -7,10 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Load project locally"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch_depth: 0
 
       - name: "Obtain list of files changed between ${{ github.HEAD_REF }} and ${{ github.BASE_REF }}"
         run: |
+          git branch
           git log
           git diff --name-only ${{ github.BASE_REF }}..${{ github.SHA }}
 
