@@ -12,7 +12,7 @@ jobs:
       - name: "Obtain list of files changed between ${{ github.HEAD_REF }} and ${{ github.BASE_REF }}"
         run: |
           git branch
-          git diff --name-only origin/${{ github.BASE_REF }}
+          git diff --name-only ${{ github.BASE_REF }}..${{ github.SHA }}
 
       - name: "Run Vale"
         run: echo "Test"
