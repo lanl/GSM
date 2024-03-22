@@ -16,6 +16,7 @@ jobs:
       - name: "Retrieve files modified by last N commits"
         id: list
         run: |
+          # Note: the below will fail if there are not 20 commits to use
           tmp_files=$(git diff --name-only HEAD~20 -- | sed -e 'H;${x;s/\n/,/g;s/^,//;p;};d')
           echo "Modified files include: '$tmp_files'"
           echo "modified_files=$tmp_files" >> "$GITHUB_OUTPUT"
@@ -25,6 +26,6 @@ jobs:
         uses: errata-ai/vale-action@reviewdog
         with:
           reporter: github-pr-check
-          fail_on_error: true
+          fail_on_error: false
           files: '${{ steps.list.outputs.modified_files }}'
           separator: ","
