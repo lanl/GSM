@@ -10,12 +10,12 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: "Obtain list of files changed in this branch"
-        run: |
+      - run: |
         echo "Current branch: ${{ GITHUB_HEAD_REF }}"
         echo "Merge to branch: ${{ GITHUB_BASE_REF }}"
 
       - name: "Run Vale"
-        run: echo "Test"
+      - run: echo "Test"
 #      - uses: errata-ai/vale-action@reviewdog
 #        with:
 #          reporter: github-pr-check
