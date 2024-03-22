@@ -11,7 +11,9 @@ jobs:
         with:
           ref: ${{ github.HEAD_REF }}
           fetch-depth: 20
-      - run: |
+
+      - name: "Obtain files modified by last N commits"
+        run: |
           tmp_files=$(git diff --name-only HEAD~10 --)
 
       - name: "Run Vale"
