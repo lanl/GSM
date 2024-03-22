@@ -17,7 +17,7 @@ jobs:
         id: list
         run: |
           tmp_files=$(git diff --name-only HEAD~20 --)
-          echo "modified_files=$tmp_files" >> "$GITHUB_OUTPUT"
+          echo "modified_files='$tmp_files'" >> "$GITHUB_OUTPUT"
 
       - name: "Run Vale"
         id: prose
@@ -26,4 +26,4 @@ jobs:
           reporter: github-pr-check
           fail_on_error: true
           files: ${{ steps.list.outputs.modified_files }}
-          separator: "\n"
+          separator: " "
