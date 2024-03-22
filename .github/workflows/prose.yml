@@ -12,18 +12,12 @@ jobs:
           ref: ${{ github.HEAD_REF }}
           fetch-depth: 20
       - run: |
-          tmp_files=$(git diff --name-only HEAD~10 --)
-          $tmp_files
-
-      - name: "Obtain list of files changed within last 20 commits on ${{ github.HEAD_REF }}"
-        run: |
-          git branch
-          files=$(git log --name-only --pretty=format:"" --max-count=20 | sort -u)
-          $files
+          tmp_files=$(git diff --name-only HEAD~20 --)
 
       - name: "Run Vale"
         run: echo "Test"
-#      - uses: errata-ai/vale-action@reviewdog
-#        with:
-#          reporter: github-pr-check
-#          fail_on_error: true
+      - uses: errata-ai/vale-action@reviewdog
+        with:
+          reporter: github-pr-check
+          fail_on_error: true
+          files: $tmp_files
