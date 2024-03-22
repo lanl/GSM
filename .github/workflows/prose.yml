@@ -7,19 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Load project branch '${{ github.HEAD_REF }}' locally"
+        id: load
         uses: actions/checkout@v4
         with:
           ref: ${{ github.HEAD_REF }}
           fetch-depth: 20
 
       - name: "Obtain files modified by last N commits"
+        id: list
         run: |
           tmp_files=$(git diff --name-only HEAD~10 --)
+          echo "modified_files=$tmp_files" >> "$GITHUB_OUTPUT"
 
       - name: "Run Vale"
-        run: echo "Test"
-      - uses: errata-ai/vale-action@reviewdog
+        id: prose
+        uses: errata-ai/vale-action@reviewdog
         with:
           reporter: github-pr-check
           fail_on_error: true
-          files: $tmp_files
+          files: ${{ steps.list.outputs.$tmp_files }}
