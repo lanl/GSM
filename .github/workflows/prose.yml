@@ -9,7 +9,7 @@ jobs:
       - name: "Load project locally"
         uses: actions/checkout@v4
         with:
-          fetch_depth: 0
+          fetch-depth: 0
 
       - name: "Obtain list of files changed between ${{ github.HEAD_REF }} and ${{ github.BASE_REF }}"
         run: |
