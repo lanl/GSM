@@ -15,8 +15,8 @@ jobs:
       - name: "Obtain list of files changed within last 20 commits on ${{ github.HEAD_REF }}"
         run: |
           git branch
-          sha_n=$(git rev-parse HEAD~20)
-          git diff --name-only $sha_n --
+          files=$(git log --name-only --pretty=format:"" --max-count=20 | sort -u)
+          $files
 
       - name: "Run Vale"
         run: echo "Test"
