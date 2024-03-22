@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Load project locally"
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
       - name: "Obtain list of files changed in this branch"
         run: |
         echo "Current branch: ${{ GITHUB_HEAD_REF }}"
