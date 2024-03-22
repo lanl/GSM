@@ -6,7 +6,14 @@ jobs:
     name: runner / vale
     runs-on: ubuntu-latest
     steps:
-      - name: "Load project locally"
+      - name: "Load project branch '${{ github.BASE_REF }}' locally"
+        uses: actions/checkout@v4
+          with:
+            ref: ${{ github.BASE_REF }}
+            path: base_branch
+        run: git log
+
+      - name: "Load project branch '${{ github.HEAD_REF }}' locally"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
