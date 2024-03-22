@@ -9,10 +9,9 @@ jobs:
       - name: "Load project locally"
         uses: actions/checkout@v3
 
-      - name: "Obtain list of files changed in this branch"
+      - name: "Obtain list of files changed between ${{ github.HEAD_REF }} and ${{ github.BASE_REF }}"
         run: |
-          echo "Current branch: ${{ github.HEAD_REF }}"
-          echo "Merge to branch: ${{ github.BASE_REF }}"
+          git diff --name-only ${{ github.BASE_REF }}
 
       - name: "Run Vale"
         run: echo "Test"
