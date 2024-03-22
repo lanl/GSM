@@ -27,4 +27,4 @@ jobs:
           fail_on_error: true
           files: ${{ steps.list.outputs.modified_files }}
             with:
-              separator = "\n"
+                separator: "\n"
