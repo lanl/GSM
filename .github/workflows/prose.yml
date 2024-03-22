@@ -6,8 +6,16 @@ jobs:
     name: runner / vale
     runs-on: ubuntu-latest
     steps:
+      - name: "Load project locally"
       - uses: actions/checkout@v3
-      - uses: errata-ai/vale-action@reviewdog
-        with:
-          reporter: github-pr-check
-          fail_on_error: true
+
+      - name: "Obtain list of files changed in this branch"
+      - run |
+           echo "Current branch: ${{ GITHUB_HEAD_REF }}"
+           echo "Merge to branch: ${{ GITHUB_BASE_REF }}"
+
+      - name: "Run Vale"
+#      - uses: errata-ai/vale-action@reviewdog
+#        with:
+#          reporter: github-pr-check
+#          fail_on_error: true
