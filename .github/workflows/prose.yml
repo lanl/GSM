@@ -6,22 +6,15 @@ jobs:
     name: runner / vale
     runs-on: ubuntu-latest
     steps:
-      - name: "Load project branch '${{ github.BASE_REF }}' locally"
-        uses: actions/checkout@v4
-          with:
-            ref: ${{ github.BASE_REF }}
-            path: base_branch
-        run: git log
-
       - name: "Load project branch '${{ github.HEAD_REF }}' locally"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: "Obtain list of files changed between ${{ github.HEAD_REF }} and ${{ github.BASE_REF }}"
+      - name: "Obtain list of files changed within last 20 commits on ${{ github.HEAD_REF }}"
         run: |
           git branch
-          git diff --name-only ${{ github.BASE_REF }}
+          git diff --name-only HEAD~20
 
       - name: "Run Vale"
         run: echo "Test"
