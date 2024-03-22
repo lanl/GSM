@@ -17,6 +17,7 @@ jobs:
         id: list
         run: |
           tmp_files=$(git diff --name-only HEAD~20 -- | sed -e 'H;${x;s/\n/,/g;s/^,//;p;};d')
+          echo "Modified files include: '$tmp_files'"
           echo "modified_files='$tmp_files'" >> "$GITHUB_OUTPUT"
 
       - name: "Run Vale"
