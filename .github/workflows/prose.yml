@@ -26,5 +26,5 @@ jobs:
           reporter: github-pr-check
           fail_on_error: true
           files: ${{ steps.list.outputs.modified_files }}
-            with:
-                separator: "\n"
+          with:
+            separator: "\n"
