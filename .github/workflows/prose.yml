@@ -15,6 +15,7 @@ jobs:
         echo "Merge to branch: ${{ GITHUB_BASE_REF }}"
 
       - name: "Run Vale"
+        run: echo "Test"
 #      - uses: errata-ai/vale-action@reviewdog
 #        with:
 #          reporter: github-pr-check
