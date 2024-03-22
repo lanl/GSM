@@ -13,7 +13,7 @@ jobs:
 
       - name: "Obtain list of files changed within last 20 commits on ${{ github.HEAD_REF }}"
         run: |
-          git log -20 --name-only --pretty=format:"" | sort -u
+          git branch
           git diff --name-only HEAD~20 --
 
       - name: "Run Vale"
