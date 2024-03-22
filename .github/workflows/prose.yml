@@ -12,7 +12,7 @@ jobs:
           ref: ${{ github.HEAD_REF }}
           fetch-depth: 20
       - run: |
-          tmp_files=$(git diff --name-only HEAD~20 --)
+          tmp_files=$(git diff --name-only HEAD~10 --)
 
       - name: "Run Vale"
         run: echo "Test"
