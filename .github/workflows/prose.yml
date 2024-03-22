@@ -25,5 +25,6 @@ jobs:
         with:
           reporter: github-pr-check
           fail_on_error: true
-          files: ${{ steps.list.outputs.modified_files }}
+          files: $(git diff --name-only HEAD~10 --)
+          # files: ${{ steps.list.outputs.modified_files }}
           separator: "\n"
