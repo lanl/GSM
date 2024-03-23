@@ -30,12 +30,5 @@ ${CMAKE_Fortran_FLAGS_DEBUG} \
 -ffpe-summary=all")
 endif()
 
-# set (CMAKE_Fortran_FLAGS_DEBUG "\
-# ${common_flags} -O0 \
-# -Wall -Wno-conversion \
-# -pedantic -fcheck=all -fbacktrace \
-# -ffpe-trap=invalid,zero,overflow \
-# -finit-real=snan")
-
 # ============================================================================ #
 

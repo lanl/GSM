@@ -1,0 +1,31 @@
+name: Lint & Check Prose
+on: [pull_request]
+
+jobs:
+  vale:
+    name: runner / vale
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Load project branch '${{ github.HEAD_REF }}' locally"
+        id: load
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.HEAD_REF }}
+          fetch-depth: 21
+
+      - name: "Retrieve files modified by last N commits"
+        id: list
+        run: |
+          # Note: the below will fail if there are not 20 commits to use
+          tmp_files=$(git diff --name-only HEAD~20 -- | sed -e 'H;${x;s/\n/,/g;s/^,//;p;};d')
+          echo "Modified files include: '$tmp_files'"
+          echo "modified_files=$tmp_files" >> "$GITHUB_OUTPUT"
+
+      - name: "Run Vale"
+        id: prose
+        uses: errata-ai/vale-action@reviewdog
+        with:
+          reporter: github-pr-check
+          fail_on_error: false
+          files: '${{ steps.list.outputs.modified_files }}'
+          separator: ","

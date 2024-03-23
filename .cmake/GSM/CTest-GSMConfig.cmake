@@ -8,12 +8,14 @@ cmake_minimum_required (VERSION 3.8.0)
 # Load testing
 include (CTest)
 # enable_testing()
+
+
 add_custom_target(build_and_test
   ${CMAKE_CTEST_COMMAND}
   COMMENT "${Cyan}Building and running tests...${ColorReset}"
   )
 message(${envDEBUG} "${PROJECT_NAME} testing is enabled.")
-if (NOT "${CMAKE_BUILD_TYPE}" MATCHES "DEBUG")
+if (NOT "${CMAKE_BUILD_TYPE}" MATCHES "^(Debug|DEBUG)$")
   message(${envDEBUG}
     "   Set CMAKE_BUILD_TYPE to DEBUG when running tests for a robust usage.")
 endif ()

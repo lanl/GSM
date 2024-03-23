@@ -13,6 +13,11 @@ build/
 my_*/
 Docs/Docs_*
 
+# CMake Artificats
+# # =======================
+*CMakeFiles*
+*CMakeCache.txt*
+
 
 # Regression tests (only necessary directories):
 # =========================

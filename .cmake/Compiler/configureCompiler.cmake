@@ -10,6 +10,10 @@ PreventInSourceBuild()
 # Specify library compilation definitions
 include (compile_definitions)
 
+# Ensure generic flags are included in the debug / release ones
+set (CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${CMAKE_Fortran_FLAGS}")
+set (CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} ${CMAKE_Fortran_FLAGS}")
+
 # Obtain the compiler name and check capabilities
 include(${CMAKE_Fortran_COMPILER_ID} RESULT_VARIABLE found)
 if(NOT found)
@@ -21,7 +25,6 @@ if(NOT found)
 endif()
 
 # Print the flags being used to the user
-
 message(${envDEBUG}
   "${PROJECT_NAME} will be compiled with the following flag sets:\n"
   "     (Release) ${Cyan}${CMAKE_Fortran_FLAGS_RELEASE}${ColorReset}\n"

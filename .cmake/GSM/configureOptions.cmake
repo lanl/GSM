@@ -40,6 +40,9 @@ add_option("SHARED"
 add_option("TEST"
   "Enable the unit testing in GSM"
   ON)
+add_option("COVERAGE"
+  "Enable the code coverage in GSM"
+  ON)
 
 
 # \todo Deprecate this option
@@ -80,6 +83,10 @@ endif()
 
 if(${PROJECT_NAME}.TEST)
   include (CTest-GSMConfig)
+endif()
+
+if(${PROJECT_NAME}.COVERAGE)
+  include (Coverage-GSMConfig)
 endif()
 
 # ============================================================================ #
